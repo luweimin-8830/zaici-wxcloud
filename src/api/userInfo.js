@@ -10,7 +10,7 @@ const db = getDb();
 router.post("/", async (req, res, next) => {
     try {
         const OPENID = req.headers["x-wx-openid"];
-        if (!openId) { return res.json(fail(401, "未获取到openId,请确认")) }
+        if (!OPENID) { return res.json(fail(401, "未获取到openId,请确认")) }
         const userQuery = await db.collection('users').where({ openId: OPENID }).get()
         let userObj = {}
         if (userQuery.data.length === 0) {
