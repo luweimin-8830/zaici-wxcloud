@@ -6,6 +6,6 @@ import userInfoRouter from "./userInfo.js"
 const router = Router();
 
 router.use("/test", testRouter)
-router.user("/userInfo",userInfoRouter)
+router.use("/userInfo",userInfoRouter)
 
 export default router;
