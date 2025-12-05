@@ -2,20 +2,33 @@ import express from "express";//用express框架简单一点，以后可能换�
 import tcb from "@cloudbase/node-sdk";//用来连接云开发的数据库
 import crypto from "crypto"; //用Nodejs的加密包
 import morgan from "morgan";
-import { error, trace } from "console";
+import apiRouter from "./src/api/index.js";
+import { notFoundHandler, errorHandler } from "./src/error.js";
 
 const tencent_cloud = tcb.init({ //初始化环境，后面可能直接从容器环境里面读取
     secretId: "AKIDzveAVfdOwHOHxPl5KNF1oTwELG3e4GMX",
     secretKey: "BB50AE6lFZhcKrFRQErHTREpDRUM1Vn2",
     env: "cloud1-1gth9cum37c9015c"
 })
+
+export function getDb(){
+    return tencent_cloud.database()
+}
+
+export function getModels(){
+    return tencent_cloud.models
+}
+
 const db = tencent_cloud.database();//初始化数据库，之后可能直接从模型倒下去
 const models = tencent_cloud.models; //简化模型调用
-const SECRET_KEY = "37b6c7156eaa44d0"; //GoEasy API请求检验
+const SECRET_KEY = "e42487a150c54d35"; //GoEasy API请求检验
 const app = express(); //创建 express instance
 app.use(express.urlencoded({ extended: false })); //启用 URLEncode 反序列化
 app.use(express.json()); //启用JSON反序列化
 app.use(morgan('combined'));//启用morgan日志记录器
+app.use("/api",apiRouter);//开放api
+app.use(notFoundHandler);//404
+app.use(errorHandler);//500
 app.get("/", async (req, res) => {
     res.send("Hello");
 })
