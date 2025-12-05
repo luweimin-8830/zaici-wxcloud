@@ -27,8 +27,6 @@ app.use(express.urlencoded({ extended: false })); //启用 URLEncode 反序列�
 app.use(express.json()); //启用JSON反序列化
 app.use(morgan('combined'));//启用morgan日志记录器
 app.use("/api",apiRouter);//开放api
-app.use(notFoundHandler);//404
-app.use(errorHandler);//500
 app.get("/", async (req, res) => {
     res.send("Hello");
 })
@@ -206,4 +204,6 @@ async function verifySignature(req, res, next) {
         res.status(401).json({ error: 'Invalid signature' });
     }
 }
+app.use(notFoundHandler);//404
+app.use(errorHandler);//500
 bootstrap();
