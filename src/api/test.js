@@ -1,8 +1,10 @@
 //模版页面,新接口页面直接复制此页
 import { Router } from "express";
 import { ok, fail } from "../response.js";
+import { getDb ,getModels } from "./src/util/tcb.js";
 
 const router = Router();
+const db = getDb();
 
 router.get("/", async (req, res) => {
     try {

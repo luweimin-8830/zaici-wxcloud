@@ -1,26 +1,14 @@
 import express from "express";//用express框架简单一点，以后可能换成Rust或者什么的
-import tcb from "@cloudbase/node-sdk";//用来连接云开发的数据库
 import crypto from "crypto"; //用Nodejs的加密包
 import morgan from "morgan";
 import apiRouter from "./src/api/index.js";
 import { notFoundHandler, errorHandler } from "./src/error.js";
+import { getDb ,getModels } from "./src/util/tcb.js";
 
-const tencent_cloud = tcb.init({ //初始化环境，后面可能直接从容器环境里面读取
-    secretId: "AKIDzveAVfdOwHOHxPl5KNF1oTwELG3e4GMX",
-    secretKey: "BB50AE6lFZhcKrFRQErHTREpDRUM1Vn2",
-    env: "cloud1-1gth9cum37c9015c"
-})
 
-export function getDb(){
-    return tencent_cloud.database()
-}
 
-export function getModels(){
-    return tencent_cloud.models
-}
-
-const db = tencent_cloud.database();//初始化数据库，之后可能直接从模型倒下去
-const models = tencent_cloud.models; //简化模型调用
+const db = getDb();//初始化数据库，之后可能直接从模型倒下去
+const models = getModels(); //简化模型调用
 const SECRET_KEY = "e42487a150c54d35"; //GoEasy API请求检验
 const app = express(); //创建 express instance
 app.use(express.urlencoded({ extended: false })); //启用 URLEncode 反序列化
