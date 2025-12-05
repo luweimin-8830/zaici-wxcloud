@@ -2,12 +2,12 @@
 import { Router } from "express";
 import axios from "axios";
 import { ok, fail } from "../response.js";
-import { getDb, getModels } from "./src/util/tcb.js";
+import { getDb, getModels } from "../util/tcb.js";
 
 const router = Router();
 const db = getDb();
 
-router.get("/", async (req, res, next) => {
+router.post("/", async (req, res, next) => {
     try {
         const openId = req.headers["x-wx-openid"];
         if (!openId) { return res.json(fail(401, "未获取到openId,请确认")) }
