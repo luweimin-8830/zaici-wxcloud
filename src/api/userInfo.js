@@ -32,6 +32,7 @@ router.post("/", async (req, res, next) => {
             const existingUser = userQuery.data[0];
             const docId = existingUser._id;
             await db.collection('users').doc(docId).update({lastLogin:new Date()});
+            userObj = { ...existingUser, lastLogin: new Date() };
         }
 
         res.json(ok(userObj))
