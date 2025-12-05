@@ -9,14 +9,14 @@ const db = getDb();
 
 router.post("/", async (req, res, next) => {
     try {
-        const openId = req.headers["x-wx-openid"];
+        const OPENID = req.headers["x-wx-openid"];
         if (!openId) { return res.json(fail(401, "未获取到openId,请确认")) }
-        const userQuery = await db.collection('users').where({ openId: openId }).get()
+        const userQuery = await db.collection('users').where({ openId: OPENID }).get()
         let userObj = {}
         if (userQuery.data.length === 0) {
             //新用户
             const newUser = {
-                openid: OPENID,
+                openId: OPENID,
                 superLike: 0,
                 beLike: 0,
                 beSuperLike: 0,
