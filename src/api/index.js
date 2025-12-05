@@ -1,11 +1,9 @@
 //api入口
 import { Router } from "express";
-import { getDb } from "../../index";
-import { getModels } from "../../index";
-import test from "./test"
+import testRouter from "./test.js"
 
 const router = Router();
 
-router.use("/test",test)
+router.use("/test",testRouter)
 
 export default router;
