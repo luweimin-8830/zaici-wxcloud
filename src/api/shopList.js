@@ -17,7 +17,7 @@ router.post("/", async (req, res, next) => {
         } else {
             var SHOW_AS_KM = false
         }
-        if (req.longitude) {
+        if (req.body.longitude) {
             let merchantList = await db.collection("shop_list")
                 .aggregate()
                 .geoNear({
