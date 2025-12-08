@@ -1,0 +1,25 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - '55561:80'
+    container_name: wxcloud_zaici-wxcloud
+    labels:
+      - wxPort=56545
+      - hostPort=55561
+      - wxcloud=zaici-wxcloud
+      - role=container
+    environment:
+      - MYSQL_USERNAME=
+      - MYSQL_PASSWORD=
+      - MYSQL_ADDRESS=
+networks:
+  default:
+    external:
+      name: wxcb0

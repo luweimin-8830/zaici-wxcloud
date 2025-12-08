@@ -86,4 +86,50 @@ function moveObjectToFirst(arr, key, value) {
     return arr;
 }
 
+router.post("/save", async (req, res) => {
+    try {
+        const query = req.body
+        if (query.shopList) {
+            query.shopList.createdAt = new Date()
+            const shopList = await db.collection('shop_list').add(query.shopList);
+            return res.json(ok(shopList))
+        } else {
+            return res.json(fail(401, "参数错误"))
+        }
+    } catch (e) { console.log(e) }
+})
+
+router.post("/update", async (req, res) => {
+    try {
+        const query = req.body
+        if (query.shopList._id) {
+            let obj = query.shopList
+            delete obj.createdAt
+            delete obj.starttime
+            delete obj.endtime
+            let id = obj._id
+            delete obj._id
+            const shopList = await db.collection('shop_list').where({ _id: id }).update({
+                ...obj,
+                updatedAt: new Date()
+            })
+            return res.json(ok(shopList))
+        } else {
+            return res.json(fail(401, "参数错误"))
+        }
+    } catch (e) { console.log(e) }
+})
+
+router.post("/del", async (req, res) => {
+    try {
+        const query = req.body
+        if (query.id) {
+            const shopList = await db.collection('shop_list').where({ _id: query.id }).remove();
+            return res.json(ok("删除成功"))
+        } else {
+            return res.json(fail(401,"参数错误"))
+        }
+    } catch (e) { console.log(e) }
+})
+
 export default router;

@@ -5,24 +5,59 @@ import { getDb, getModels } from "../util/tcb.js";
 const router = Router();
 const db = getDb();
 
-router.post("/", async (req, res) => {
+router.post("/get", async (req, res) => {
     try {
         const query = req.body
         if (query.openId) {
-            let res = await db.collection("detail_record").where({ openId: query.openId, status: 1 }).get()
-            let res1 = await db.collection('users').where({ openid: query.openId }).get()
+            let detail_record = await db.collection("detail_record").where({ openId: query.openId, status: 1 }).get()
+            let users = await db.collection('users').where({ openId: query.openId }).get()
             let info = {}
-            if (res1.data.length > 0 && res.data.length > 0) {
-                info = res.data[0]
-                info.avatar = res1.data[0].avatar
-                info.name = res1.data[0].name
+            if (users.data.length > 0 && detail_record.data.length > 0) {
+                info = detail_record.data[0]
+                info.avatar = users.data[0].avatar
+                info.name = users.data[0].name
                 return res.json(ok(info))
             } else {
                 return res.json(ok("未填写今日的我"))
             }
 
         } else {
-            return res.json(fail(401,"参数错误"))
+            return res.json(fail(401, "参数错误"))
+        }
+    } catch (e) { console.log(e) }
+})
+
+router.post("/save", async (req, res) => {
+    try {
+        const query = req.body
+        if (query.openId) {
+            let detail_record = await db.collection('detail_record').where({
+                openId: query.openId,
+                status: 1
+            }).get()
+            let detail = {
+                openId: query.openId,
+                plan: query.plan,
+                mood: query.mood,
+                style: query.style,
+                description: query.description,
+                seat: query.seat,
+                image: query.image,
+            }
+            if (detail_record.data.length == 0) {
+                let newDetail = {
+                    ...detail,
+                    status: 1,
+                    createdAt: new Date()
+                }
+                await db.collection('detail_record').add(newDetail)
+                return res.json(ok(newDetail))
+            } else {
+                await db.collection('detail_record').doc(detail_record.data[0]._id).update(detail)
+                return res.json(ok(detail))
+            }
+        } else {
+            return res.json(fail(401, "参数错误"))
         }
     } catch (e) { console.log(e) }
 })

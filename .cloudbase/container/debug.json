@@ -3,7 +3,9 @@
     {
       "name": "zaici-wxcloud",
       "domain": "",
-      "ip": ""
+      "ip": "",
+      "mode": "compose",
+      "containerId": "3f561799e3caa2debbb840191545f9173dcaa32ae3ac585b32032d077061c3d8"
     }
   ],
   "config": {

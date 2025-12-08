@@ -6,7 +6,7 @@ import { getDb ,getModels } from "../util/tcb.js";
 const router = Router();
 const db = getDb();
 
-router.get("/", async (req, res) => {
+router.post("/", async (req, res) => {
     try {
         const data = "这是一个测试,hello."
         res.json(ok(data))
