@@ -12,4 +12,16 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositorie
 && npm config set registry https://mirrors.cloud.tencent.com/npm/ \
 && npm install
 
+# --- 设置时区开始 ---
+# 1. 安装 tzdata 包
+RUN apk add --no-cache tzdata
+
+# 2. 设置环境变量
+ENV TZ=Asia/Shanghai
+
+# 3. 复制时区文件 (Alpine 的做法)
+RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone
+# --- 设置时区结束 ---
+
 CMD ["npm", "start"]
