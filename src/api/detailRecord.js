@@ -5,7 +5,7 @@ import { getDb, getModels } from "../util/tcb.js";
 const router = Router();
 const db = getDb();
 
-router.post("/get", async (req, res) => {
+router.post("/", async (req, res) => {
     try {
         const query = req.body
         if (query.openId) {
