@@ -1,4 +1,3 @@
-//模版页面,新接口页面直接复制此页
 import { Router } from "express";
 import axios from "axios";
 import { ok, fail } from "../response.js";

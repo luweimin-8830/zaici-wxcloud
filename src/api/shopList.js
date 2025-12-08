@@ -1,4 +1,3 @@
-//模版页面,新接口页面直接复制此页
 import { Router } from "express";
 import { ok, fail } from "../response.js";
 import { getDb, getModels } from "../util/tcb.js";
@@ -9,21 +8,23 @@ const _ = db.command;
 
 router.post("/", async (req, res, next) => {
     try {
-        let longitude = typeof req.longitude == "number" ? req.longitude : Number(req.longitude);
-        let latitude = typeof req.latitude == "number" ? req.latitude : Number(req.latitude);
-        let distance = typeof req.distance == "number" ? req.distance : Number(req.distance);
+        const query = req.body;
+        let longitude = typeof query.longitude == "number" ? query.longitude : Number(query.longitude);
+        let latitude = typeof query.latitude == "number" ? query.latitude : Number(query.latitude);
+        let distance = typeof query.distance == "number" ? query.distance : Number(query.distance);
+        const myLocation = new db.Geo.Point(longitude, latitude)
         if (distance >= 1000) {
             var SHOW_AS_KM = true
         } else {
             var SHOW_AS_KM = false
         }
-        if (req.body.longitude) {
+        if (query.longitude) {
             let merchantList = await db.collection("shop_list")
                 .aggregate()
                 .geoNear({
                     distanceField: "distance", // 输出的每个记录中 distance 即是与给定点的距离
                     spherical: true,
-                    near: new db.Geo.Point(longitude, latitude),
+                    near: myLocation,
                     minDistance: 0,
                     maxDistance: distance,
                     distanceMultiplier: SHOW_AS_KM ? 0.001 : 1,
@@ -34,24 +35,40 @@ router.post("/", async (req, res, next) => {
             if (merchantList.data.length > 0) {
                 let shopList = merchantList.data
                 const now = new Date().getTime()
-                for (let i = 0; i < shopList.length; i++) {
-                    let count = await db.collection('online').where({
-                        shopId: shopList[i]._id,
+                const shopIds = shopList.map(shop => shop._id)
+                const onlineStats = await db.collection('online').aggregate()
+                    .match({
+                        shopId: _.in(shopIds),
                         status: '在线',
                         dueTime: _.gte(now)
-                    }).count()
-                    shopList[i].onlineCount = count.total
+                    })
+                    .group({
+                        _id: '$shopId',
+                        total: { $sum: 1 }
+                    })
+                    .end();
+                const countMap = {};
+                if (onlineStats.data) {
+                    onlineStats.data.forEach(item => {
+                        countMap[item._id] = item.total;
+                    });
                 }
-                if (req.shopId != '') {
-                    shopList = moveObjectToFirst(shopList, '_id', req.shopId);
+                // 4. 遍历店铺列表，将人数填进去 (内存匹配)
+                shopList.forEach(shop => {
+                    // 如果 map 里有值就取值，没有就是 0
+                    shop.onlineCount = countMap[shop._id] || 0;
+                });
+
+                if (query.shopId != '') {
+                    shopList = moveObjectToFirst(shopList, '_id', query.shopId);
                 }
                 merchantList.data = shopList
             }
-            return merchantList
+            return res.json(ok(merchantList))
         } else {
-            return res.json(fail(401,"参数错误"))
+            return res.json(fail(401, "参数错误"))
         }
-    } catch (e) { console.error(e);next(e) }
+    } catch (e) { console.error(e); next(e) }
 })
 
 function moveObjectToFirst(arr, key, value) {
