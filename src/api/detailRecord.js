@@ -70,8 +70,29 @@ router.post("/saveSeat", async (req, res) => {
                 seat: query.seat
             })
             return res.json(ok("更新成功"))
-        }else {
-            return res.json(fail(401,"参数错误"))
+        } else {
+            return res.json(fail(401, "参数错误"))
+        }
+    } catch (e) { console.log(e) }
+})
+
+//获取图片hash值
+router.post("/getHash", async (req, res) => {
+    try {
+        const query = req.body
+        if (query.picHash) {
+            const pic = await db.collection("picture_list").where({ picHash: query.picHash }).get()
+            if (pic.data.length > 0) {
+                if (pic.data[0].secCheckStatus = 0) {
+                    return res.json(ok("图片存在违规行为,禁止发布"))
+                } else {
+                    return res.json(ok(res.data[0].userPicUrl))
+                }
+            } else {
+                return res.json(ok("无相应图片"))
+            }
+        }else{
+            res.json(fail(401,"参数错误"))
         }
     } catch (e) { console.log(e) }
 })
