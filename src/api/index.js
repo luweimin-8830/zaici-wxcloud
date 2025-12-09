@@ -5,6 +5,7 @@ import shopListRouter from "./shopList.js";
 import detailRecordRouter from "./detailRecord.js";
 import onlineRouter from "./online.js";
 import matchRouter from "./match.js";
+import chatRouter from "./chat.js";
 
 const router = Router();
 
@@ -13,5 +14,6 @@ router.use("/shopList",shopListRouter);
 router.use("/detailRecord",detailRecordRouter);
 router.use("/online",onlineRouter);
 router.use("/match",matchRouter);
+router.use("/chat",chatRouter);
 
 export default router;

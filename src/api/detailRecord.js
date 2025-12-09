@@ -62,4 +62,18 @@ router.post("/save", async (req, res) => {
     } catch (e) { console.log(e) }
 })
 
+router.post("/saveSeat", async (req, res) => {
+    try {
+        const query = req.body
+        if (query.openId) {
+            await db.collection("detail_record").where({ openId: query.openId, status: 1 }).update({
+                seat: query.seat
+            })
+            return res.json(ok("更新成功"))
+        }else {
+            return res.json(fail(401,"参数错误"))
+        }
+    } catch (e) { console.log(e) }
+})
+
 export default router;

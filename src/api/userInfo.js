@@ -52,13 +52,13 @@ router.post("/save", async (req, res) => {
             if (query.key == 'avatar' || query.key == 'name') {
                 let res1 = await db.collection('Online').where({ openId: query.openId })
                     .update({
-                        
+
                         [query.key]: query.data
                     })
             }
             return res.json(ok("更新成功"))
         } else {
-            res.json(fail(401,"参数错误"))
+            res.json(fail(401, "参数错误"))
         }
     } catch (e) { console.log(e) }
 })
@@ -68,20 +68,39 @@ router.post("/superLike", async (req, res) => {
     try {
         const query = req.body
         if (query.openId) {
-        let user = await db.collection('users').where({ openid: query.openId }).get()
-        console.log(user)
-        if (user.data[0].superLike == 0) {
-            return res.json(ok("superLike次数已用完"))
-        } else if (user.data[0].superLike > 0) {
-            user.data[0].superLike = user.data[0].superLike - 1
-            await db.collection('users').where({ openid: query.openId }).update({
-                superLike: user.data[0].superLike
-            })
-            return res.json(ok("super Like次数-1"))
+            let user = await db.collection('users').where({ openid: query.openId }).get()
+            console.log(user)
+            if (user.data[0].superLike == 0) {
+                return res.json(ok("superLike次数已用完"))
+            } else if (user.data[0].superLike > 0) {
+                user.data[0].superLike = user.data[0].superLike - 1
+                await db.collection('users').where({ openid: query.openId }).update({
+                    superLike: user.data[0].superLike
+                })
+                return res.json(ok("super Like次数-1"))
+            }
+        } else {
+            return res.json(fail(401, "参数错误"))
         }
-    } else {
-        return res.json(fail(401,"参数错误"))
-    }
+    } catch (e) { console.log(e) }
+})
+
+//发放super like次数
+router.post("/addSuperLike", async (req, res) => {
+    try {
+        const query = req.body
+        if (query.userList.length > 0) {
+            for (let i = 0; i < query.userList.length; i++) {
+                let user = await db.collection('users').where({ openid: query.userList[i].openid }).get()
+                let total = user.data[0].superLike + query.total
+                await db.collection('users').where({ openid: query.userList[i].openid }).update({
+                    superLike: total
+                })
+            }
+            return res.json(ok("发放成功"))
+        } else {
+            return res.json(fail(401,"参数错误"))
+        }
     } catch (e) { console.log(e) }
 })
 
