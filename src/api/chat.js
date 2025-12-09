@@ -58,9 +58,30 @@ router.post("/delInfo", async (req, res) => {
             let res = await db.collection('information_monitor').where({ openId: query.openId }).remove()
             return res.json(ok("删除成功"))
         } else {
-            return res.json(fail(401,"参数错误"))
+            return res.json(fail(401, "参数错误"))
         }
     } catch (e) { console.log(e) }
 })
+
+//文本检测
+router.post("/check", async (req, res) => {
+    try {
+        const query = req.body
+        const wx_msg_check = await fetch("https://api.weixin.qq.com/wxa/msg_sec_check", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "content": query.content, //临时文件URL
+                "version": 2,
+                "scene": query.scene,
+                "openid": query.openId, //小程序版本号，默认为2
+            })
+        })
+        return res.json(ok(wx_msg_check))
+    } catch (e) { console.log(e) }
+})
+
 
 export default router;
