@@ -84,7 +84,7 @@ router.post("/getHash", async (req, res) => {
             const pic = await db.collection("picture_list").where({ picHash: query.picHash }).get()
             if (pic.data.length > 0) {
                 if (pic.data[0].secCheckStatus = 0) {
-                    return res.json(ok("图片存在违规行为,禁止发布"))
+                    return res.json(ok({msg:"图片存在违规行为,禁止发布",code:0}))
                 } else {
                     return res.json(ok(res.data[0].userPicUrl))
                 }
