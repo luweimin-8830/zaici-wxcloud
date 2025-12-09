@@ -5,6 +5,7 @@ import { sort }  from "./online.js";
 
 const router = Router();
 const db = getDb();
+const _ = db.command;
 
 //获取匹配
 router.post("/get", async (req, res) => {
