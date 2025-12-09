@@ -6,6 +6,7 @@ import detailRecordRouter from "./detailRecord.js";
 import onlineRouter from "./online.js";
 import matchRouter from "./match.js";
 import chatRouter from "./chat.js";
+import bannerRouter from "./banner.js";
 
 const router = Router();
 
@@ -15,5 +16,6 @@ router.use("/detailRecord",detailRecordRouter);
 router.use("/online",onlineRouter);
 router.use("/match",matchRouter);
 router.use("/chat",chatRouter);
+router.use("/banner",bannerRouter);
 
 export default router;

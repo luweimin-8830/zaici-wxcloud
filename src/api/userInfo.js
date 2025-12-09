@@ -11,7 +11,7 @@ router.post("/", async (req, res, next) => {
         const OPENID = req.headers["x-wx-openid"];
         if (!OPENID) { return res.json(fail(401, "未获取到openId,请确认")) }
         const userQuery = await db.collection('users').where({ openId: OPENID }).get()
-        const userName = "用户" + OPENID.splice(4)
+        const userName = "用户" + OPENID.slice(-4)
         let userObj = {}
         if (userQuery.data.length === 0) {
             //新用户
