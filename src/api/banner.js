@@ -19,11 +19,10 @@ router.post("/save", async (req, res) => {
             let bannerObj = JSON.parse(JSON.stringify(query))
             delete bannerObj._id
             bannerObj.interval = Number(bannerObj.interval)
-            await db.collection('banner').where({ _id: query._id }).update({
+            await db.collection('banner').where({ _id: query.banner._id }).update({
                 ...bannerObj,
                 updatedAt: new Date()
             })
-            // console.log(res)
             return res.json(ok("更新成功"))
         } else {
             await db.collection("banner").add({
