@@ -8,7 +8,7 @@ const db = getDb();
 router.get("/", async (req, res) => {
     try {
         let banner = await db.collection('banner').get()
-        return res.json(ok(banner))
+        return res.json(ok(banner.data))
     } catch (e) { console.log(e) }
 })
 
