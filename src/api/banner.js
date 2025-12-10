@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
 router.post("/save", async (req, res) => {
     try {
         const query = req.body;
-        if (query._id) {
+        if (query.banner._id) {
             let bannerObj = JSON.parse(JSON.stringify(query))
             delete bannerObj._id
             bannerObj.interval = Number(bannerObj.interval)
@@ -27,13 +27,8 @@ router.post("/save", async (req, res) => {
             return res.json(ok("更新成功"))
         } else {
             await db.collection("banner").add({
-                detail: query.detail,
-                interval: Number(query.interval),
-                autoplay: query.autoplay,
-                type: query.type,
-                url: query.url,
+                ...query.banner,
                 createdAt: new Date(),
-                title: query.title
             })
             return res.json(ok("新增成功"))
         }
