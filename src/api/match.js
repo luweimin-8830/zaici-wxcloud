@@ -59,7 +59,7 @@ router.post("/get", async (req, res) => {
                         id = query.openId
                     }
                     let person = await db.collection('users').where({
-                        openid: id
+                        openId: id
                     }).get()
                     let detail = await db.collection('detail_record').where({ openId: id, status: 1 }).get()
                     list[i].userInfo = person.data[0] || {}
@@ -111,12 +111,12 @@ router.post("/get", async (req, res) => {
 router.post("/add", async (req, res) => {
     try {
         const query = req.body
-        let openid1 = query.openid1
-        let openid2 = query.openid2
+        let openId1 = query.openId1
+        let openId2 = query.openId2
         let operation = query.operation
         let channel = query.channel
-        let matchList = await db.collection("match").where({ openId1: openid1, openId2: openid2 }).get()
-        let matchList1 = await db.collection("match").where({ openId1: openid2, openId2: openid1 }).get()
+        let matchList = await db.collection("match").where({ openId1: openId1, openId2: openid2 }).get()
+        let matchList1 = await db.collection("match").where({ openId1: openId2, openId2: openId1 }).get()
         let status = ''
         if (matchList.data.length > 0) {
             if (operation == 1) {
@@ -128,7 +128,7 @@ router.post("/add", async (req, res) => {
                     })
                 status = 1
                 if (query.likeType == 2) {
-                    let user = await db.collection("users").where({ openid: query.openid2 }).get()
+                    let user = await db.collection("users").where({ openId: query.openId2 }).get()
                     changeData(query, user)
                 }
             } else if (operation == 0) {
@@ -148,7 +148,7 @@ router.post("/add", async (req, res) => {
                     })
                 status = 2
                 if (query.likeType == 1) {
-                    let user = await db.collection("users").where({ openid: query.openid1 }).get()
+                    let user = await db.collection("users").where({ openId: query.openId1 }).get()
                     changeData(query, user)
                 }
             } else if (operation == 0) {
@@ -162,8 +162,8 @@ router.post("/add", async (req, res) => {
         } else if (matchList.data.length == 0 && matchList1.data.length == 0) {
             await db.collection('match').add({
                 channel: channel,
-                openId1: openid1,
-                openId2: openid2,
+                openId1: openId1,
+                openId2: openId2,
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 status: 1,
@@ -172,11 +172,11 @@ router.post("/add", async (req, res) => {
             console.log('111111111')
             status = 1
             if (query.likeType == 2) {
-                let user = await db.collection("users").where({ openid: query.openid2 }).get()
+                let user = await db.collection("users").where({ openId: query.openId2 }).get()
                 changeData(query, user)
             }
             await db.collection('information_monitor').add({
-                openId: openid2,
+                openId: openId2,
                 source: "match",
                 createdAt: new Date()
             })
@@ -211,7 +211,7 @@ router.post("/getLikeMatch", async (req, res) => {
                     if (userQuery.data[i].likeType == 2) {
                         userQuery.data[i].score = userQuery.data[i].score + 100
                     }
-                    let person = await db.collection('users').where({ openid: userQuery.data[i].openId1 }).get()
+                    let person = await db.collection('users').where({ openId: userQuery.data[i].openId1 }).get()
                     let detail = await db.collection('detail_record').where({ openId: userQuery.data[i].openId1, status: 1 }).get()
                     if (detail.data.length > 0) {
                         if (detail.data[0].image.length > 0) {
