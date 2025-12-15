@@ -227,6 +227,68 @@ router.post("/shop", async (req, res) => {
     } catch (e) { console.log(e) }
 })
 
+router.post("/save", async (req, res) => {
+    try {
+        const query = req.body
+        let user = await db.collection('users').where({
+            openid: query.openId,
+        }).get()
+        let name = ''
+        let avatar = ''
+        if (user.data.length > 0) {
+            avatar = user.data[0].avatar
+            name = user.data[0].name
+        }
+        let now = new Date()
+        // now.setDate(now.getDate()+1); // 增加 1 天（UTC）
+        now.setHours(21, 0, 0, 0); // 05:00:00 UTC// 强制设置为本地时间 05:00:00.000
+        const due = new Date(now).getTime()
+        let location = {}
+        if (!query.location) {
+            location = {
+                coordinates: [0, 0],
+                type: 'Point'
+            }
+        } else {
+            location = event.location
+        }
+        let data = await db.collection('online').where({
+            openId: query.openId,
+            dueTime: _.gt(Date.now())
+        }).get()
+        if (data.data.length > 0) {
+            await db.collection('online').doc(data.data[0]._id)
+                .update({
+                    location: query.location,
+                    shopName: query.shopName,
+                    shopId: query.shopId,
+                    flag: query.flag,
+                    updatedAt: new Date()
+                })
+        } else {
+            await db.collection('Online').add({
+                openId: query.openId,
+                shopId: query.shopId,
+                shopName: query.shopName,
+                name: name,
+                location: location,
+                avatar: avatar,
+                status: '在线',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                dueTime: due,
+                flag: query.flag
+            })
+        }
+        let online = await db.collection('online').where({
+            openId: query.openId,
+            dueTime: db.command.gte(Date.now())
+        }).get()
+
+        return res.json(ok(online))
+    } catch (e) { console.log(e) }
+})
+
 export default router;
 
 export function sort(data) {
