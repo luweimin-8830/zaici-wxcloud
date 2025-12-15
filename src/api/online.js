@@ -250,7 +250,7 @@ router.post("/save", async (req, res) => {
                 type: 'Point'
             }
         } else {
-            location = event.location
+            location = query.location
         }
         let data = await db.collection('online').where({
             openId: query.openId,
@@ -266,7 +266,7 @@ router.post("/save", async (req, res) => {
                     updatedAt: new Date()
                 })
         } else {
-            await db.collection('Online').add({
+            await db.collection('online').add({
                 openId: query.openId,
                 shopId: query.shopId,
                 shopName: query.shopName,
