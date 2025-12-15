@@ -231,7 +231,7 @@ router.post("/save", async (req, res) => {
     try {
         const query = req.body
         let user = await db.collection('users').where({
-            openid: query.openId,
+            openId: query.openId,
         }).get()
         let name = ''
         let avatar = ''
