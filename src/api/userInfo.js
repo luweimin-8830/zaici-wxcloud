@@ -50,9 +50,8 @@ router.post("/save", async (req, res) => {
                     updatedAt: new Date(),
                 })
             if (query.key == 'avatar' || query.key == 'name') {
-                let res1 = await db.collection('Online').where({ openId: query.openId })
+                let res1 = await db.collection('online').where({ openId: query.openId })
                     .update({
-
                         [query.key]: query.data
                     })
             }
