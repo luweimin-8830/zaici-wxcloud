@@ -44,13 +44,13 @@ router.post("/save", async (req, res) => {
     try {
         const query = req.body
         if (query.openId) {
-            let res = await db.collection('users').where({ openId: query.openId })
+            await db.collection('users').where({ openId: query.openId })
                 .update({
                     [query.key]: query.key == 'birthday' ? query.data ? new Date(query.data) : null : query.data,
                     updatedAt: new Date(),
                 })
             if (query.key == 'avatar' || query.key == 'name') {
-                let res1 = await db.collection('online').where({ openId: query.openId })
+                await db.collection('online').where({ openId: query.openId })
                     .update({
                         [query.key]: query.data
                     })
