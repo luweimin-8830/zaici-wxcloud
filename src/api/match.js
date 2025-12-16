@@ -65,20 +65,6 @@ router.post("/get", async (req, res) => {
                     list[i].userInfo = person.data[0] || {}
                     list[i].detail = person.data[0] || {}
                     if (person.data.length > 0) {
-                        if (person.data[0].avatar) {
-                            await app.getTempFileURL({
-                                fileList: [{
-                                    fileID: person.data[0].avatar,
-                                    maxAge: 180 * 60
-                                }]
-                            })
-                                .then((res) => {
-                                    list[i].avatar = res.fileList[0].tempFileURL
-                                    console.log(res.fileList);
-                                });
-                        } else {
-                            list[i].avatar = ''
-                        }
                         list[i].name = person.data[0].name == null ? "" : person.data[0].name
                     }
                     let chatContent = await db.collection('new_chat_history').where({ channelId: list[i].channel }).orderBy('timestamp', 'desc').limit(5).get();
