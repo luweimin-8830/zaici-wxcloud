@@ -55,7 +55,7 @@ router.post("/delInfo", async (req, res) => {
     try {
         const OPENID = req.headers["x-wx-openid"]
         if (OPENID) {
-            let res = await db.collection('information_monitor').where({ openId: OPENID }).remove()
+            await db.collection('information_monitor').where({ openId: OPENID }).remove()
             return res.json(ok("删除成功"))
         } else {
             return res.json(fail(401, "参数错误"))
