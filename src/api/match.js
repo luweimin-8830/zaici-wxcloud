@@ -28,12 +28,12 @@ router.post("/get", async (req, res) => {
             if (likeCount.data.length > 0) {
                 let likep = likeCount.data[0]
                 if (likep.openId1 == query.openId) {
-                    let r = await db.collection('users').where({ openid: likep.openId2 }).get()
+                    let r = await db.collection('users').where({ openId: likep.openId2 }).get()
                     if (r.data.length > 0) {
                         avatar = r.data[0].avatar
                     }
                 } else if (likep.openId2 == query.openId) {
-                    let r = await db.collection('users').where({ openid: likep.openId1 }).get()
+                    let r = await db.collection('users').where({ openId: likep.openId1 }).get()
                     if (r.data.length > 0) {
                         avatar = r.data[0].avatar
                     }
