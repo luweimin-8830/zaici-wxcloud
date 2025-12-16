@@ -53,9 +53,9 @@ router.post("/saveBlock", async (req, res) => {
 //删除提示
 router.post("/delInfo", async (req, res) => {
     try {
-        const query = req.body
-        if (query.openId) {
-            let res = await db.collection('information_monitor').where({ openId: query.openId }).remove()
+        const OPENID = req.headers["x-wx-openid"]
+        if (OPENID) {
+            let res = await db.collection('information_monitor').where({ openId: qOPENID }).remove()
             return res.json(ok("删除成功"))
         } else {
             return res.json(fail(401, "参数错误"))
