@@ -115,7 +115,7 @@ router.post("/add", async (req, res) => {
         let openId2 = query.openId2
         let operation = query.operation
         let channel = query.channel
-        let matchList = await db.collection("match").where({ openId1: openId1, openId2: openid2 }).get()
+        let matchList = await db.collection("match").where({ openId1: openId1, openId2: openId2 }).get()
         let matchList1 = await db.collection("match").where({ openId1: openId2, openId2: openId1 }).get()
         let status = ''
         if (matchList.data.length > 0) {
@@ -169,7 +169,6 @@ router.post("/add", async (req, res) => {
                 status: 1,
                 likeType: query.likeType
             })
-            console.log('111111111')
             status = 1
             if (query.likeType == 2) {
                 let user = await db.collection("users").where({ openId: query.openId2 }).get()
