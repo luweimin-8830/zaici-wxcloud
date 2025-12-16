@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { ok, fail } from "../response.js";
 import { getDb, getModels } from "../util/tcb.js";
-import { sort }  from "./online.js";
+import { sort } from "./online.js";
 
 const router = Router();
 const db = getDb();
@@ -65,6 +65,7 @@ router.post("/get", async (req, res) => {
                     list[i].userInfo = person.data[0] || {}
                     list[i].detail = person.data[0] || {}
                     if (person.data.length > 0) {
+                        list[i].avatar = person.data[0].avatar
                         list[i].name = person.data[0].name == null ? "" : person.data[0].name
                     }
                     let chatContent = await db.collection('new_chat_history').where({ channelId: list[i].channel }).orderBy('timestamp', 'desc').limit(5).get();
@@ -178,7 +179,7 @@ router.post("/del", async (req, res) => {
             let res = await db.collection('match').where({ channel: query.channel }).remove()
             return res.json(ok("解除匹配成功"))
         } else {
-            return res.json(401,"参数错误")
+            return res.json(401, "参数错误")
         }
     } catch (e) { console.log(e) }
 })
@@ -224,7 +225,7 @@ router.post("/getLikeMatch", async (req, res) => {
             let userList = sort(list)
             return res.json(ok(userList))
         } else {
-            return res.json(fail(401,"参数错误"))
+            return res.json(fail(401, "参数错误"))
         }
     } catch (e) { console.log(e) }
 })
