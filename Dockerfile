@@ -8,7 +8,7 @@ COPY . /app
 # 安装依赖包，如需其他依赖包，请到alpine依赖包管理(https://pkgs.alpinelinux.org/packages?name=php8*imagick*&branch=v3.13)查找。
 # 选用国内镜像源以提高下载速度
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositories \
-&& apk add --update --no-cache nodejs npm \
+&& apk add --update --no-cache nodejs npm ca-certificates\
 && npm config set registry https://mirrors.cloud.tencent.com/npm/ \
 && npm install
 

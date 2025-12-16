@@ -67,16 +67,17 @@ router.post("/delInfo", async (req, res) => {
 router.post("/check", async (req, res) => {
     try {
         const query = req.body
+        console.log(query)
         const wx_msg_check = await fetch("https://api.weixin.qq.com/wxa/msg_sec_check", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                "content": query.content, //临时文件URL
+                "content": query.content,
                 "version": 2,
                 "scene": query.scene,
-                "openid": query.openId, //小程序版本号，默认为2
+                "openid": query.openId, 
             })
         })
         return res.json(ok(wx_msg_check))
