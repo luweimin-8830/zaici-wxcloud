@@ -1,27 +1,31 @@
 # 二开推荐阅读[如何提高项目构建效率](https://developers.weixin.qq.com/miniprogram/dev/wxcloudrun/src/scene/build/speed.html)
+# 建议使用 LTS 版本，如 node:20-alpine
 FROM node:24-alpine
+
+# 设置工作目录
 WORKDIR /app
-COPY . /app
-# 容器默认时区为UTC，如需使用上海时间请启用以下时区设置命令
-# RUN apk add tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo Asia/Shanghai > /etc/timezone
 
-# 安装依赖包，如需其他依赖包，请到alpine依赖包管理(https://pkgs.alpinelinux.org/packages?name=php8*imagick*&branch=v3.13)查找。
-# 选用国内镜像源以提高下载速度
+# 1. 设置镜像源并安装系统依赖 (合并 tzdata 和 ca-certificates)
+# 容器默认时区为UTC，这里直接一并处理时区设置
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositories \
-&& apk add --update --no-cache nodejs npm ca-certificates\
-&& npm config set registry https://mirrors.cloud.tencent.com/npm/ \
-&& npm install
+    && apk add --update --no-cache \
+    ca-certificates \
+    tzdata \
+    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone
 
-# --- 设置时区开始 ---
-# 1. 安装 tzdata 包
-RUN apk add --no-cache tzdata
-
-# 2. 设置环境变量
+# 设置环境变量 TZ，确保 Node 应用也能识别时区
 ENV TZ=Asia/Shanghai
 
-# 3. 复制时区文件 (Alpine 的做法)
-RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-    && echo "Asia/Shanghai" > /etc/timezone
-# --- 设置时区结束 ---
+# 2. 优先复制依赖描述文件 (利用 Docker 缓存层)
+COPY package*.json ./
 
+# 3. 安装 Node 依赖
+RUN npm config set registry https://mirrors.cloud.tencent.com/npm/ \
+    && npm install --production
+
+# 4. 最后复制所有源代码
+COPY . /app
+
+# 启动命令
 CMD ["npm", "start"]
