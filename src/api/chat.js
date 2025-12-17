@@ -80,7 +80,9 @@ router.post("/check", async (req, res) => {
                 "openid": query.openId, 
             })
         })
+        console.log(`检测违规内容${wx_msg_check}`)
         const data = wx_msg_check.json();
+        console.log(`data,wx msg check value ${data}`)
         if (data.errcode && data.errcode !== 0) {
             return res.json(fail(500,data));
         }
