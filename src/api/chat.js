@@ -68,7 +68,7 @@ router.post("/check", async (req, res) => {
     try {
         const query = req.body
         console.log(query)
-        const wx_msg_check = await fetch("https://api.weixin.qq.com/wxa/msg_sec_check", {
+        const wx_msg_check = await fetch("http://api.weixin.qq.com/wxa/msg_sec_check", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -80,7 +80,11 @@ router.post("/check", async (req, res) => {
                 "openid": query.openId, 
             })
         })
-        return res.json(ok(wx_msg_check))
+        const data = wx_msg_check.json();
+        if (data.errcode && data.errcode !== 0) {
+            return res.json(fail(500,data));
+        }
+        return res.json(ok(data))
     } catch (e) { console.log(e) }
 })
 
