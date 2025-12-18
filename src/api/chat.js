@@ -27,7 +27,7 @@ router.post("/update", async (req, res) => {
             const chat = await db.collection('new_chat_history')
                 .where(_.and([
                     { channelId: query.channelId },
-                    { senderOpenID: query.openId }
+                    { receiverOpenID: query.openId }
                 ]))
                 .update({ 'messageContent.state': query.state })
             return res.json(ok("更新成功"))
