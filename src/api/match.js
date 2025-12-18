@@ -63,7 +63,8 @@ router.post("/get", async (req, res) => {
                     }).get()
                     let detail = await db.collection('detail_record').where({ openId: id, status: 1 }).get()
                     list[i].userInfo = person.data[0] || {}
-                    list[i].detail = person.data[0] || {}
+                    list[i].detailRecord = detail.data[0] || {}
+                    
                     if (person.data.length > 0) {
                         list[i].avatar = person.data[0].avatar
                         list[i].name = person.data[0].name == null ? "" : person.data[0].name
