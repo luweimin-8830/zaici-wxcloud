@@ -177,7 +177,7 @@ router.post("/del", async (req, res) => {
     try {
         const query = req.body
         if (query.channel) {
-            let res = await db.collection('match').where({ channel: query.channel }).remove()
+            await db.collection('match').where({ channel: query.channel }).remove()
             return res.json(ok("解除匹配成功"))
         } else {
             return res.json(401, "参数错误")
