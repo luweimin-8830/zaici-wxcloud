@@ -63,6 +63,7 @@ app.post("/webhook", verifySignature, async (req, res) => {
                 let _message = JSON.parse(message.content);
                 models.new_chat_history.create({
                     data: {
+                        receiverOpenID:_message.receiverOpenID,
                         senderOpenID: _message.openID,
                         channelId: message.channel,
                         timestamp: message.timestamp,
