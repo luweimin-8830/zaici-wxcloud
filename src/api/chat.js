@@ -8,7 +8,7 @@ const _ = db.command;
 
 router.post("/get", async (req, res) => {
     try {
-        query = req.body
+        const query = req.body
         if (query.channel) {
             let list = await db.collection('new_chat_history').orderBy('timestamp', 'desc').where({
                 channelId: query.channel
