@@ -70,7 +70,7 @@ router.post("/get", async (req, res) => {
                         list[i].name = person.data[0].name == null ? "" : person.data[0].name
                     }
                     let chatContent = await db.collection('new_chat_history').where({ channelId: list[i].channel }).orderBy('timestamp', 'desc').limit(5).get();
-                    if (chatContent.length != 0) {
+                    if (chatContent.data.length != 0) {
                         list[i].content = chatContent.data
                         list[i].contentTime = chatContent.data[0] == null ? '' : chatContent.data[0].messageContent.id
                     }
