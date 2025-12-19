@@ -3,7 +3,7 @@ import crypto from "crypto"; //用Nodejs的加密包
 import morgan from "morgan";
 import apiRouter from "./src/api/index.js";
 import { notFoundHandler, errorHandler } from "./src/error.js";
-import { getDb ,getModels } from "./src/util/tcb.js";
+import { getDb, getModels } from "./src/util/tcb.js";
 
 
 
@@ -14,7 +14,7 @@ const app = express(); //创建 express instance
 app.use(express.urlencoded({ extended: false })); //启用 URLEncode 反序列化
 app.use(express.json()); //启用JSON反序列化
 app.use(morgan('combined'));//启用morgan日志记录器
-app.use("/api",apiRouter);//开放api
+app.use("/api", apiRouter);//开放api
 app.get("/", async (req, res) => {
     res.send("Hello");
 })
@@ -63,7 +63,7 @@ app.post("/webhook", verifySignature, async (req, res) => {
                 let _message = JSON.parse(message.content);
                 models.new_chat_history.create({
                     data: {
-                        receiverOpenID:_message.receiverOpenID,
+                        receiverOpenID: _message.receiverOpenID,
                         senderOpenID: _message.openID,
                         channelId: message.channel,
                         timestamp: message.timestamp,
@@ -79,8 +79,10 @@ app.post("/webhook", verifySignature, async (req, res) => {
                     }
                 })
                 models.information_monitor.create({
-                    "openId":_message.receiverOpenID,
-                    "source":"chat",
+                    data: {
+                        "openId": _message.receiverOpenID,
+                        "source": "chat",
+                    }
                 })
             }
         )
@@ -150,7 +152,7 @@ app.post("/startCensor", async (req, res) => {
         })
     });
     if (!wx_backend_response.ok) {
-        let error_message = wx_backend_response.json().then(data=>{console.log(data);return data});
+        let error_message = wx_backend_response.json().then(data => { console.log(data); return data });
     }
     let wx_backend_response_json = await wx_backend_response.json();
     console.log(wx_backend_response_json);
