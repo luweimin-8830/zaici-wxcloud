@@ -109,9 +109,25 @@ router.post("/addAdmin", async (req, res) => {
         let isAdmin = await db.collection('admins').where({ openId: OPENID }).get()
         if (isAdmin.data.length > 0) {
             return res.json(ok("已是管理员"))
-        }else{
-            await db.collection("admins").add({openId:OPENID})
+        } else {
+            await db.collection("admins").add({ openId: OPENID })
             return res.json(ok("添加管理员成功"))
+        }
+    } catch (e) { console.log(e) }
+})
+
+router.post("/getInfo", async (req, res) => {
+    try {
+        const query = req.body;
+        if (query.openId) {
+            let data = {}
+            const userInfo = await db.collection('users').where({ openId: query.openId }).get();
+            const detail = await db.collection('detail_record').where({ openId: query.openId }).get();
+            data.userInfo = userInfo;
+            data.detailRecord = detail;
+            res.json(ok(data))
+        } else {
+            res.json(error(401,"参数错误"))
         }
     } catch (e) { console.log(e) }
 })
