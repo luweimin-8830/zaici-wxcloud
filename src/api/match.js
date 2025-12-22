@@ -235,15 +235,15 @@ export default router;
 
 async function changeData(event, user) {
     if (event.likeType == 1) {
-        let data = user.data[0].belike + 1
+        let data = user.data[0].beLike + 1
         await db.collection("users").doc(user.data[0]._id).update({
-            belike: data
+            beLike: data
         })
     } else if (event.likeType == 2) {
-        let data = user.data[0].besuperLike + 1
+        let data = user.data[0].beSuperLike + 1
         console.log(data)
         await db.collection("users").doc(user.data[0]._id).update({
-            besuperLike: data
+            beSuperLike: data
         })
 
     }
