@@ -6,6 +6,7 @@ import { sort } from "./online.js";
 const router = Router();
 const db = getDb();
 const _ = db.command;
+const models = getModels();
 
 //获取匹配
 router.post("/get", async (req, res) => {
@@ -64,7 +65,7 @@ router.post("/get", async (req, res) => {
                     let detail = await db.collection('detail_record').where({ openId: id, status: 1 }).get()
                     list[i].userInfo = person.data[0] || {}
                     list[i].detailRecord = detail.data[0] || {}
-                    
+
                     if (person.data.length > 0) {
                         list[i].avatar = person.data[0].avatar
                         list[i].name = person.data[0].name == null ? "" : person.data[0].name
@@ -99,6 +100,7 @@ router.post("/get", async (req, res) => {
 router.post("/add", async (req, res) => {
     try {
         const query = req.body
+        const OPENID = req.headers["x-wx-openid"]
         let openId1 = query.openId1
         let openId2 = query.openId2
         let operation = query.operation
@@ -134,6 +136,25 @@ router.post("/add", async (req, res) => {
                         status: 2,
                         updatedAt: new Date(),
                     })
+                const result = await db.collection('users').where({ openId: openId1 }).get();
+                const user = result.data[0]
+                models.new_chat_history.create({
+                    data: {
+                        receiverOpenID: openId2,
+                        senderOpenID: openId1,
+                        channelId: channel,
+                        timestamp: new Date(),
+                        messageContent: {
+                            "id": new Date(),
+                            "content": "我们可以开始聊天了,开始发送第一条消息吧",
+                            "type": 1,
+                            "contentType": 'text',
+                            "pic": user.avatar,
+                            "name": user.name,
+                            "state": 0
+                        }
+                    }
+                })
                 status = 2
                 if (query.likeType == 1) {
                     let user = await db.collection("users").where({ openId: query.openId1 }).get()
