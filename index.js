@@ -4,7 +4,7 @@ import morgan from "morgan";
 import apiRouter from "./src/api/index.js";
 import { notFoundHandler, errorHandler } from "./src/error.js";
 import { getDb, getModels } from "./src/util/tcb.js";
-
+import {ok,fail} from "./src/response.js";
 
 
 const db = getDb();//初始化数据库，之后可能直接从模型倒下去
@@ -17,6 +17,10 @@ app.use(morgan('combined'));//启用morgan日志记录器
 app.use("/api", apiRouter);//开放api
 app.get("/", async (req, res) => {
     res.send("Hello");
+})
+
+app.get("/getServerDate", async (req,res)=>{
+    return res.json(ok(Date.now()))
 })
 
 // 微信云托管服务，健康检查和内容安全回调
