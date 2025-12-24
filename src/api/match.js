@@ -143,9 +143,9 @@ router.post("/add", async (req, res) => {
                         receiverOpenID: openId2,
                         senderOpenID: openId1,
                         channelId: channel,
-                        timestamp: new Date(),
+                        timestamp: new Date().getTime(),
                         messageContent: {
-                            "id": new Date(),
+                            "id": new Date().getTime(),
                             "content": "我们可以开始聊天了,开始发送第一条消息吧",
                             "type": 1,
                             "contentType": 'text',
