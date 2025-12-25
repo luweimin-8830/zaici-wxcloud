@@ -17,8 +17,8 @@ router.post("/save", async (req, res) => {
         const query = req.body;
         const bannerDate = query.banner;
         if (query.banner._id) {
-            let updateDate = {...bannerDate};
-            delete updateDate._id
+            let updateData = {...bannerDate};
+            delete updateData._id
             if (updateData.interval) {
                 updateData.interval = Number(updateData.interval);
             }
