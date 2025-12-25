@@ -15,11 +15,14 @@ router.get("/", async (req, res) => {
 router.post("/save", async (req, res) => {
     try {
         const query = req.body;
+        const bannerDate = query.banner;
         if (query.banner._id) {
-            let bannerObj = JSON.parse(JSON.stringify(query))
-            delete bannerObj._id
-            bannerObj.interval = Number(bannerObj.interval)
-            await db.collection('banner').where({ _id: query.banner._id }).update({
+            let updateDate = {...bannerDate};
+            delete updateDate._id
+            if (updateData.interval) {
+                updateData.interval = Number(updateData.interval);
+            }
+            await db.collection('banner').doc( bannerDate._id ).update({
                 ...bannerObj,
                 updatedAt: new Date()
             })
