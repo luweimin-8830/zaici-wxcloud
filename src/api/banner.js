@@ -23,7 +23,7 @@ router.post("/save", async (req, res) => {
                 updateData.interval = Number(updateData.interval);
             }
             await db.collection('banner').doc( bannerDate._id ).update({
-                ...bannerObj,
+                ...updateData,
                 updatedAt: new Date()
             })
             return res.json(ok("更新成功"))
