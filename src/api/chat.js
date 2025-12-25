@@ -37,6 +37,24 @@ router.post("/update", async (req, res) => {
     } catch (e) { console.log(e) }
 })
 
+router.post("/updateState", async (req, res) => {
+    try {
+        const query = req.body
+        if (query.channelId) {
+            const chat = await db.collection('new_chat_history')
+                .where(_.and([
+                    { channelId: query.channelId },
+                    { "messageContent.id": query.id }
+                ]))
+                .update({ 'messageContent.state': query.state })
+                console.log("chat",chat)
+            return res.json(ok("更新成功"))
+        } else {
+            return res.json(fail(401, "参数错误"))
+        }
+    } catch (e) { console.log(e) }
+})
+
 //屏蔽用户
 router.post("/saveBlock", async (req, res) => {
     try {
