@@ -20,7 +20,7 @@ router.post("/saveDistance", async (req, res) => {
 router.get("/getDistance", async (req, res) => {
     try {
         const distance = await db.collection("config").doc("9b5f7bed694e4f060123ee6e76416ebc").get()
-        res.json(ok(distance.data))
+        res.json(ok(distance.data[0]))
     } catch (e) { console.log(e) }
 })
 
