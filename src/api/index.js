@@ -7,6 +7,7 @@ import onlineRouter from "./online.js";
 import matchRouter from "./match.js";
 import chatRouter from "./chat.js";
 import bannerRouter from "./banner.js";
+import configRouter from "./config.js"
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use("/online",onlineRouter);
 router.use("/match",matchRouter);
 router.use("/chat",chatRouter);
 router.use("/banner",bannerRouter);
+router.use("/config",configRouter);
 
 export default router;
