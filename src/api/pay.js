@@ -12,9 +12,9 @@ router.post("/", async (req, res) => {
         const OPENID = req.headers['x-wx-openid'];
         let orderNo = Date.now() + Math.random().toString().substr(2, 5)
         let payment = {
+            "openid": OPENID,
             "body": "测试微信支付",
             "trade_type": "JSAPI",
-            "openid": OPENID,
             "out_trade_no": orderNo,
             "spbill_create_ip": "127.0.0.1",
             "env_id": "prod-3g90nhycc15ce33f",
