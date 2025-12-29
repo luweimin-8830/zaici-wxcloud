@@ -85,14 +85,14 @@ router.post("/get", async (req, res) => {
                         })
                     }
                     list[i].wRead = wRead
-                    list.sort((a,b) => {
-                        if(a.content === 1) return -1;
-                        if(b.content === 1) return 1;
+                    list.sort((a, b) => {
+                        if (a.content === 1) return -1;
+                        if (b.content === 1) return 1;
                         const timeA = a.content?.[0]?.timestamp || 0;
                         const timeB = b.content?.[0]?.timestamp || 0;
                         return timeB - timeA
                     })
-                    console.log("match list :",list)
+                    console.log("match list :", list)
                 }
                 return res.json(ok(list))
             } else {
@@ -257,6 +257,34 @@ router.post("/getLikeMatch", async (req, res) => {
         } else {
             return res.json(fail(401, "参数错误"))
         }
+    } catch (e) { console.log(e) }
+})
+
+router.post("/sendMessage", async (req, res) => {
+    try {
+        const OPENID = req.headers['x-wx-openid'];
+        const query = req.body;
+        const sender = {
+            "touser": query.openId,
+            "template_id": "R8qmwRxHN0iSr5tDolLzzLICdw8NarWOYqqLukVNZgM",
+            "page": "pages/index/index?value=2",
+            "miniprogram_state": "developer",//体验版,formal为正式版
+            "lang": "zh_CN",
+            "data": {
+                thing1: { "value": query.name },
+                date2: { "value": new Date() }
+            }
+        }
+        const wx_send_message = await fetch("http://api.weixin.qq.com/cgi-bin/message/subscribe/send", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(sender)
+        })
+        const result = await wx_send_message.json()
+        console.log("send message",result)
+        res.json(ok(result))
     } catch (e) { console.log(e) }
 })
 
