@@ -85,6 +85,12 @@ router.post("/get", async (req, res) => {
                         })
                     }
                     list[i].wRead = wRead
+                    list.sort((a,b) => {
+                        const timeA = a.content?.[0]?.timestamp || 0;
+                        const timeB = b.content?.[0]?.timestamp || 0;
+                        return timeB - timeA
+                    })
+                    console.log("match list :",list)
                 }
                 return res.json(ok(list))
             } else {
