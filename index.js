@@ -23,6 +23,16 @@ app.get("/getServerDate", async (req,res)=>{
     return res.json(ok(Date.now()))
 })
 
+app.post("/payCallback", async(req,res)=>{
+    try{
+        console.log("支付回调",req)
+        res.status(200).send()
+    }catch(e){
+        console.error(e)
+        res.status(500).send()
+    }
+})
+
 // 微信云托管服务，健康检查和内容安全回调
 app.post("/censor", async (req, res) => {
     let { action, MsgType, Event, trace_id, result } = req.body; //反序列化几个关键的对象
@@ -170,6 +180,8 @@ app.post("/startCensor", async (req, res) => {
     })
 
 });
+
+
 
 const port = process.env.PORT || 80;
 

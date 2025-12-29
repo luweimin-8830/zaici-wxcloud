@@ -10,16 +10,21 @@ const _ = db.command;
 router.post("/", async (req, res) => {
     try {
         const OPENID = req.headers['x-wx-openid'];
+        let orderNo = Date.now() + Math.random().toString().substr(2, 5)
         let payment = {
             "body": "测试微信支付",
             "trade_type": "JSAPI",
             "openid": OPENID,
-            "out_trade_no": "1217752501201407033233368019",
+            "out_trade_no": orderNo,
             "spbill_create_ip": "127.0.0.1",
             "env_id": "prod-3g90nhycc15ce33f",
             "sub_mch_id": "1727232939",
             "total_fee": 1,
-            "callback_type": 2,            
+            "callback_type": 2,
+            "container": {
+                "service": "express-gqsx",
+                "path": "/payCallback"
+            }
         }
         const wx_order_pay = await fetch("http://api.weixin.qq.com/_/pay/unifiedOrder", {
             method: "POST",
@@ -28,7 +33,7 @@ router.post("/", async (req, res) => {
             },
             body: JSON.stringify(payment)
         })
-        console.log("wx payment result:",wx_order_pay)
+        console.log("wx payment result:", wx_order_pay)
         return res.json(ok(wx_order_pay))
     } catch (e) { console.log(e) }
 })
