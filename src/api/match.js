@@ -86,6 +86,8 @@ router.post("/get", async (req, res) => {
                     }
                     list[i].wRead = wRead
                     list.sort((a,b) => {
+                        if(a.content === 1) return -1;
+                        if(b.content === 1) return 1;
                         const timeA = a.content?.[0]?.timestamp || 0;
                         const timeB = b.content?.[0]?.timestamp || 0;
                         return timeB - timeA
