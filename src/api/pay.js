@@ -33,8 +33,9 @@ router.post("/", async (req, res) => {
             },
             body: JSON.stringify(payment)
         })
-        console.log("wx payment result:", wx_order_pay)
-        return res.json(ok(wx_order_pay))
+        const result = await wx_order_pay.json()
+        console.log("wx payment result:", result)
+        return res.json(ok(result))
     } catch (e) { console.log(e) }
 })
 
