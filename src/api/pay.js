@@ -12,6 +12,7 @@ router.post("/", async (req, res) => {
         const OPENID = req.headers['x-wx-openid'];
         let payment = {
             "body": "测试微信支付",
+            "trade_type": "JSAPI",
             "openid": OPENID,
             "out_trade_no": "1217752501201407033233368019",
             "spbill_create_ip": "127.0.0.1",
