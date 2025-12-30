@@ -264,15 +264,24 @@ router.post("/sendMessage", async (req, res) => {
     try {
         const OPENID = req.headers['x-wx-openid'];
         const query = req.body;
+        const time = new Intl.DateTimeFormat("zh-CN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            hour12: false,
+            timeZone: "Asia/Shanghai",
+        }).format(new Date())
         const sender = {
             "touser": query.openId,
             "template_id": "R8qmwRxHN0iSr5tDolLzzLICdw8NarWOYqqLukVNZgM",
             "page": "pages/index/index?value=2",
-            "miniprogram_state": "developer",//体验版,formal为正式版
+            "miniprogram_state": "developer",//开发版,trial为体验版,formal为正式版
             "lang": "zh_CN",
             "data": {
                 thing1: { "value": query.name },
-                date2: { "value": new Date() }
+                date2: { "value": time }
             }
         }
         const wx_send_message = await fetch("http://api.weixin.qq.com/cgi-bin/message/subscribe/send", {
@@ -283,7 +292,7 @@ router.post("/sendMessage", async (req, res) => {
             body: JSON.stringify(sender)
         })
         const result = await wx_send_message.json()
-        console.log("send message",result)
+        console.log("send message", result)
         res.json(ok(result))
     } catch (e) { console.log(e) }
 })
