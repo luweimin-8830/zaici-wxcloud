@@ -133,7 +133,6 @@ router.post("/shop", async (req, res) => {
         const query = req.body;
         if (query.shopId) {
             const now = new Date().getTime()
-            console.log(now)
             let userList = []
             let list = await db.collection('online').where({
                 shopId: query.shopId,

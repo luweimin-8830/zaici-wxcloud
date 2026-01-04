@@ -68,7 +68,6 @@ router.post("/superLike", async (req, res) => {
         const query = req.body
         if (query.openId) {
             let user = await db.collection('users').where({ openId: query.openId }).get()
-            console.log(user)
             if (user.data[0].superLike == 0) {
                 return res.json(ok("superLike次数已用完"))
             } else if (user.data[0].superLike > 0) {

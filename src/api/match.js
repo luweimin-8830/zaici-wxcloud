@@ -22,7 +22,6 @@ router.post("/get", async (req, res) => {
                     { openId2: query.openId }
                 ])
             ])).get()
-            console.log(user)
             let list = []
             let avatar = ''
             let likeCount = await db.collection('match').where({ status: 1, openId2: query.openId }).get()
@@ -292,7 +291,6 @@ router.post("/sendMessage", async (req, res) => {
             body: JSON.stringify(sender)
         })
         const result = await wx_send_message.json()
-        console.log("send message", result)
         res.json(ok(result))
     } catch (e) { console.log(e) }
 })

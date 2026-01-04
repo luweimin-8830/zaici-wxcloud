@@ -47,7 +47,6 @@ router.post("/updateState", async (req, res) => {
                     { "messageContent.id": query.id }
                 ]))
                 .update({ 'messageContent.state': query.state })
-                console.log("chat",chat)
             return res.json(ok("更新成功"))
         } else {
             return res.json(fail(401, "参数错误"))
@@ -85,7 +84,6 @@ router.post("/delInfo", async (req, res) => {
 router.post("/check", async (req, res) => {
     try {
         const query = req.body
-        console.log(query)
         const wx_msg_check = await fetch("http://api.weixin.qq.com/wxa/msg_sec_check", {
             method: "POST",
             headers: {

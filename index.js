@@ -106,10 +106,7 @@ app.post("/webhook", verifySignature, async (req, res) => {
 app.post("/startCensor", async (req, res) => {
     try {
         var openid = req.headers["x-wx-openid"];
-        console.log(openid);
         var { fileid, digest } = req.body;
-        console.log(req.body);
-
         if (!fileid) {
             console.log("The request contains no fileid");
             return res.status(400).json({
@@ -198,7 +195,6 @@ async function verifySignature(req, res, next) {
     }
     let body = req.body; //在启用反序列化之后就可以这样写了
     let content = body.content;
-    console.log(body); //给出日志看一下
     // 计算预期签名：HMAC-SHA1 + Base64 编码
     let expectedSignature = crypto
         .createHmac('sha1', SECRET_KEY)

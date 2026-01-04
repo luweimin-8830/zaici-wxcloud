@@ -82,7 +82,6 @@ function moveObjectToFirst(arr, key, value) {
         // 将对象插入到数组开头
         arr.unshift(item);
     }
-    console.log(arr)
     return arr;
 }
 
