@@ -10,16 +10,17 @@ const _ = db.command;
 router.post("/", async (req, res) => {
     try {
         const OPENID = req.headers['x-wx-openid'];
+        const query = req.body;
         let orderNo = Date.now() + Math.random().toString().substr(2, 5)
         let payment = {
             "openid": OPENID,
-            "body": "测试微信支付",
+            "body": query.body,
             "trade_type": "JSAPI",
             "out_trade_no": orderNo,
             "spbill_create_ip": "127.0.0.1",
             "env_id": "prod-3g90nhycc15ce33f",
             "sub_mch_id": "1727232939",
-            "total_fee": 1,
+            "total_fee": query.money,
             "callback_type": 2,
             "container": {
                 "service": "express-gqsx",
