@@ -58,7 +58,7 @@ app.post("/censor", async (req, res) => {
                 }
             }
         }).then(data => { return data })
-    } else if(Event === "user_enter_tempsession") {
+    } else if(MsgType === "text") {
         res.status(200).send(
             {
                 "FromUserName": ToUserName,
