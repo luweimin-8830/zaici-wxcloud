@@ -35,7 +35,7 @@ app.post("/payCallback", async(req,res)=>{
 
 // 微信云托管服务，健康检查和内容安全回调
 app.post("/censor", async (req, res) => {
-    let { action, MsgType, Event, trace_id, result } = req.body; //反序列化几个关键的对象
+    let { action, MsgType, Event, trace_id, result, FromUserName, ToUserName } = req.body; //反序列化几个关键的对象
 
     // 1. 微信服务健康检查
     if (action === "CheckContainerPath") {
@@ -58,6 +58,15 @@ app.post("/censor", async (req, res) => {
                 }
             }
         }).then(data => { return data })
+    } else if(MsgType === "transfer_customer_service") {
+        res.status(200).send(
+            {
+                "FromUserName": ToUserName,
+                "ToUserName": FromUserName,
+                "CreateTime": parseInt(+new Date / 1000),
+                "MsgType": "transfer_customer_service"
+            }
+        )
     } else {
         // 默认回复，避免微信重试
         console.log("Received unexpected POST to /censor:", req.body);
