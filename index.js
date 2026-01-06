@@ -59,7 +59,8 @@ app.post("/censor", async (req, res) => {
             }
         }).then(data => { return data })
     } else if(MsgType === "text") {
-        res.status(200).send(
+        console.log("进入消息分发")
+        res.status(200).json(
             {
                 "FromUserName": ToUserName,
                 "ToUserName": FromUserName,
