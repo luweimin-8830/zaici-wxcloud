@@ -36,7 +36,7 @@ app.post("/payCallback", async(req,res)=>{
 // 微信云托管服务，健康检查和内容安全回调
 app.post("/censor", async (req, res) => {
     let { action, MsgType, Event, trace_id, result, FromUserName, ToUserName } = req.body; //反序列化几个关键的对象
-    console.log(req.body)
+    console.log("接受到回调",req.body)
     // 1. 微信服务健康检查
     if (action === "CheckContainerPath") {
         console.log("Received wechat health check.");
@@ -58,7 +58,7 @@ app.post("/censor", async (req, res) => {
                 }
             }
         }).then(data => { return data })
-    } else if(MsgType === "transfer_customer_service") {
+    } else if(Event === "user_enter_tempsession") {
         res.status(200).send(
             {
                 "FromUserName": ToUserName,
