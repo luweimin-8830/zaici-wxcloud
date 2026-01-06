@@ -58,13 +58,13 @@ app.post("/censor", async (req, res) => {
                 }
             }
         }).then(data => { return data })
-    } else if(MsgType === "text") {
+    } else if(MsgType === "text" || MsgType === "image" || (Event === "user_enter_tempsession" && MsgType === "event")) {
         console.log("进入消息分发")
-        res.status(200).json(
+        res.status(200).send(
             {
-                "FromUserName": ToUserName,
                 "ToUserName": FromUserName,
-                "CreateTime": parseInt(+new Date / 1000),
+                "FromUserName": ToUserName,
+                "CreateTime": Date.now(),
                 "MsgType": "transfer_customer_service"
             }
         )
