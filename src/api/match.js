@@ -162,6 +162,13 @@ router.post("/add", async (req, res) => {
                         }
                     }
                 })
+                //传一个红点
+                models.information_monitor.create({
+                    data: {
+                        "openId": openId2,
+                        "source": "chat",
+                    }
+                })
                 status = 2
                 if (query.likeType == 1) {
                     let user = await db.collection("users").where({ openId: query.openId1 }).get()
