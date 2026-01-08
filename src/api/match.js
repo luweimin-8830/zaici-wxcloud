@@ -173,10 +173,7 @@ router.post("/add", async (req, res) => {
                 }
             } else if (operation == 0) {
                 await db.collection('match').doc(matchList1.data[0]._id)
-                    .update({
-                        status: 3,
-                        updatedAt: new Date(),
-                    })
+                    .remove()
                 status = 3
             }
         } else if (matchList.data.length == 0 && matchList1.data.length == 0) {
