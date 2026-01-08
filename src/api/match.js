@@ -281,13 +281,13 @@ router.post("/sendMessage", async (req, res) => {
         }).format(new Date())
         const sender = {
             "touser": query.openId,
-            "template_id": "R8qmwRxHN0iSr5tDolLzzLICdw8NarWOYqqLukVNZgM",
+            "template_id": "RecSoRep6WM8ESfdxg7MfBbdrGppcCBHesgdbd0Mcjo",
             "page": "pages/index/index?value=2",
-            "miniprogram_state": "developer",//开发版,trial为体验版,formal为正式版
+            "miniprogram_state": "formal",//developer开发版,trial为体验版,formal为正式版
             "lang": "zh_CN",
             "data": {
-                thing1: { "value": query.name },
-                date2: { "value": time }
+                thing1: { "value": "附近有活跃的人喜欢了你,快去看看吧"},
+                time2: { "value": time }
             }
         }
         const wx_send_message = await fetch("http://api.weixin.qq.com/cgi-bin/message/subscribe/send", {
