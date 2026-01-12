@@ -13,3 +13,7 @@ export function getDb(){
 export function getModels(){
     return tencent_cloud.models
 }
+
+export function getTcb(){
+    return tencent_cloud
+}

@@ -3,7 +3,7 @@ import crypto from "crypto"; //用Nodejs的加密包
 import morgan from "morgan";
 import apiRouter from "./src/api/index.js";
 import { notFoundHandler, errorHandler } from "./src/error.js";
-import { getDb, getModels } from "./src/util/tcb.js";
+import { getDb, getModels ,getTcb} from "./src/util/tcb.js";
 import {ok,fail} from "./src/response.js";
 
 
@@ -11,6 +11,7 @@ const db = getDb();//初始化数据库，之后可能直接从模型倒下去
 const models = getModels(); //简化模型调用
 const SECRET_KEY = "e42487a150c54d35"; //GoEasy API请求检验
 const app = express(); //创建 express instance
+const tcb = getTcb()
 app.use(express.urlencoded({ extended: false })); //启用 URLEncode 反序列化
 app.use(express.json()); //启用JSON反序列化
 app.use(morgan('combined'));//启用morgan日志记录器
@@ -147,7 +148,7 @@ app.post("/startCensor", async (req, res) => {
                 })
             }
         }
-        var fileurl_res = await tencent_cloud.getTempFileURL({
+        var fileurl_res = await tcb.getTempFileURL({
             fileList: [fileid]
         });
     } catch (error) {
