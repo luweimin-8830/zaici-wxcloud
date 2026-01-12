@@ -86,7 +86,7 @@ router.post("/getHash", async (req, res) => {
                 if (pic.data[0].secCheckStatus = 0) {
                     return res.json(ok({msg:"图片存在违规行为,禁止发布",code:0}))
                 } else {
-                    return res.json(ok(res.data[0].userPicUrl))
+                    return res.json(ok(pic.data[0].userPicUrl))
                 }
             } else {
                 return res.json(ok("无相应图片"))
