@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { ok, fail } from "../response.js";
 import { getDb, getModels } from "../util/tcb.js";
-
+const moment = require('moment-timezone')
 const router = Router();
 const db = getDb();
 const _ = db.command
@@ -9,10 +9,11 @@ const _ = db.command
 router.post("/status", async (req, res) => {
     try {
         const query = req.body;
+        const now = moment().tz("Asia/Shanghai").format().valueOf()
         if (query.openId) {
             let user = await db.collection('online').where({
                 openId: query.openId,
-                dueTime: _.gte(Date.now())
+                dueTime: _.gte(now)
             }).get()
             if (user.data.length > 0) {
                 let position = user.data[0]
@@ -33,7 +34,7 @@ router.post("/near", async (req, res) => {
             let userList = []
             let longitude = typeof query.longitude == "number" ? query.longitude : Number(query.longitude);
             let latitude = typeof query.latitude == "number" ? query.latitude : Number(query.latitude);
-            const now = new Date().getTime()
+            const now = moment().tz("Asia/Shanghai").format().valueOf()
             let list = await db.collection('online').aggregate()
                 .geoNear({
                     distanceField: "distance", // 输出的每个记录中 distance 即是与给定点的距离
