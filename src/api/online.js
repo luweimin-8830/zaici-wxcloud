@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { ok, fail } from "../response.js";
 import { getDb, getModels } from "../util/tcb.js";
-const moment = require('moment-timezone');
+import moment from 'moment-timezone'
 const router = Router();
 const db = getDb();
 const _ = db.command
