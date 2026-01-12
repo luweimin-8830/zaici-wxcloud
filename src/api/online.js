@@ -9,11 +9,11 @@ const _ = db.command
 router.post("/status", async (req, res) => {
     try {
         const query = req.body;
-        const now = moment().tz("Asia/Shanghai").format()
+        
         if (query.openId) {
             let user = await db.collection('online').where({
                 openId: query.openId,
-                dueTime: _.gte(now)
+                dueTime: _.gte(Date.now())
             }).get()
             if (user.data.length > 0) {
                 let position = user.data[0]
@@ -34,7 +34,7 @@ router.post("/near", async (req, res) => {
             let userList = []
             let longitude = typeof query.longitude == "number" ? query.longitude : Number(query.longitude);
             let latitude = typeof query.latitude == "number" ? query.latitude : Number(query.latitude);
-            const now = moment().tz("Asia/Shanghai").format().valueOf()
+            const now = new Date().getTime()
             let list = await db.collection('online').aggregate()
                 .geoNear({
                     distanceField: "distance", // 输出的每个记录中 distance 即是与给定点的距离
@@ -241,7 +241,7 @@ router.post("/save", async (req, res) => {
         }
         let now = new Date()
         // now.setDate(now.getDate()+1); // 增加 1 天（UTC）
-        now.setHours(21, 0, 0, 0); // 05:00:00 UTC// 强制设置为本地时间 05:00:00.000
+        now.setHours(5, 0, 0, 0); // 05:00:00 UTC// 强制设置为本地时间 05:00:00.000
         const due = new Date(now).getTime()
         let location = {}
         if (!query.location) {
