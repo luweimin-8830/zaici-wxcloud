@@ -9,7 +9,7 @@ const _ = db.command
 router.post("/status", async (req, res) => {
     try {
         const query = req.body;
-        
+
         if (query.openId) {
             let user = await db.collection('online').where({
                 openId: query.openId,
@@ -240,7 +240,7 @@ router.post("/save", async (req, res) => {
             name = user.data[0].name
         }
         let now = new Date()
-        now.setDate(now.getDate()+1); // 增加 1 天（UTC）
+        now.setDate(now.getDate() + 1); // 增加 1 天（UTC）
         now.setHours(5, 0, 0, 0); // 05:00:00 UTC// 强制设置为本地时间 05:00:00.000
         const due = new Date(now).getTime()
         let location = {}
@@ -286,6 +286,23 @@ router.post("/save", async (req, res) => {
         }).get()
 
         return res.json(ok(online))
+    } catch (e) { console.log(e) }
+})
+
+router.post("/update", async (req, res) => {
+    try {
+        const query = req.body
+        if (query.id) {
+            const now = new Date()
+            let online = await db.collection('online').doc(query.id).update({
+                dueTime: now
+            })
+            const data = { code: 0, online: online, message: "更新成功" }
+            return res.json(ok(data))
+        }else{
+            return res.json(fail(401,"参数错误"))
+        }
+
     } catch (e) { console.log(e) }
 })
 
