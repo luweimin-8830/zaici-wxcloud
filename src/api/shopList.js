@@ -131,4 +131,39 @@ router.post("/del", async (req, res) => {
     } catch (e) { console.log(e) }
 })
 
+router.post("/admin", async (req, res) => {
+    try {
+        let { page = 1, limit = 10, keyword = '' } = req.body;
+        page = Number(page);
+        limit = Number(limit);
+        const skip = (page - 1) * limit;
+        let query = {};
+        if (keyword) {
+            query = {
+                name: {
+                    $regex: keyword, 
+                    $options: 'i' // 忽略大小写
+                }
+            };
+        }
+        const [listResult, countResult] = await Promise.all([
+            db.collection("shop_list")
+                .where(query)                   
+                .orderBy('create_time', 'desc') 
+                .skip(skip)                     
+                .limit(limit)                   
+                .get(),
+            
+            db.collection("shop_list")
+                .where(query)                   
+                .count()
+        ]);
+        res.json(ok({list:listResult.data,
+            total: countResult.total,
+            page:page,
+            limit:limit
+        }))
+    } catch (e) { console.log(e) }
+})
+
 export default router;
