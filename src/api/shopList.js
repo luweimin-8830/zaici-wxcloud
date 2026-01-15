@@ -140,7 +140,7 @@ router.post("/admin", async (req, res) => {
         let query = {};
         if (keyword) {
             query = {
-                name: {
+                shopname: {
                     $regex: keyword, 
                     $options: 'i' // 忽略大小写
                 }
