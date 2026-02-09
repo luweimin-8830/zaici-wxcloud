@@ -252,34 +252,28 @@ router.post("/save", async (req, res) => {
         } else {
             location = query.location
         }
-        let data = await db.collection('online').where({
+        // 把之前的在线记录设为结束
+        await db.collection('online').where({
             openId: query.openId,
             dueTime: _.gt(Date.now())
-        }).get()
-        if (data.data.length > 0) {
-            await db.collection('online').doc(data.data[0]._id)
-                .update({
-                    location: query.location,
-                    shopName: query.shopName,
-                    shopId: query.shopId,
-                    flag: query.flag,
-                    updatedAt: new Date()
-                })
-        } else {
-            await db.collection('online').add({
-                openId: query.openId,
-                shopId: query.shopId,
-                shopName: query.shopName,
-                name: name,
-                location: location,
-                avatar: avatar,
-                status: '在线',
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                dueTime: due,
-                flag: query.flag
-            })
-        }
+        }).update({
+            dueTime: Date.now()
+        })
+
+        // 新增一条进店记录
+        await db.collection('online').add({
+            openId: query.openId,
+            shopId: query.shopId,
+            shopName: query.shopName,
+            name: name,
+            location: location,
+            avatar: avatar,
+            status: '在线',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            dueTime: due,
+            flag: query.flag
+        })
         let online = await db.collection('online').where({
             openId: query.openId,
             dueTime: db.command.gte(Date.now())
@@ -303,6 +297,40 @@ router.post("/update", async (req, res) => {
             return res.json(fail(401,"参数错误"))
         }
 
+    } catch (e) { console.log(e) }
+})
+
+router.post("/history", async (req, res) => {
+    try {
+        const query = req.body;
+        if (query.shopId) {
+            const now = new Date().getTime()
+            let list = await db.collection('online').where({
+                shopId: query.shopId,
+                dueTime: _.lte(now)
+            }).get()
+            for (let i = 0; i < list.data.length; i++) {
+                let detail = await db.collection('detail_record').where({ openId: list.data[i].openId, status: 1 }).get()
+                let userInfo = await db.collection('users').where({ openId: list.data[i].openId }).get()
+                list.data[i].detailRecord = detail.data[0] || {}
+                list.data[i].userInfo = userInfo.data[0] || {}
+                if (detail.data.length > 0) {
+                    let mergedObj = { ...list.data[i], ...detail.data[0] };
+                    if (detail.data[0].image.length == 0) {
+                        if (userInfo.data.length > 0 && userInfo.data[0].avatar) {
+                            mergedObj.image = [{ url: userInfo.data[0].avatar }]
+                        } else {
+                            mergedObj.image = []
+                        }
+                    }
+                    list.data[i] = mergedObj
+                }
+            }
+            list.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            return res.json(ok(list))
+        } else {
+            return res.json(fail(401, "参数错误"))
+        }
     } catch (e) { console.log(e) }
 })
 

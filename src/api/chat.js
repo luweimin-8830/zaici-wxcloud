@@ -11,11 +11,11 @@ router.post("/get", async (req, res) => {
         const query = req.body
         const OPENID = req.headers['x-wx-openid']
         if (query.channel) {
-            //未来这里是个大坑
-            const user = await db.collection('users').where({openId:OPENID}).get()
-            const avatar = user.data[0].avatar
-            const chatHistory = await db.collection('new_chat_history').where({sendOpenID:OPENID})
-            .update({'messageContent.pic':avatar})
+            //未来这里是个大坑,已解决
+            // const user = await db.collection('users').where({openId:OPENID}).get()
+            // const avatar = user.data[0].avatar
+            // const chatHistory = await db.collection('new_chat_history').where({sendOpenID:OPENID})
+            // .update({'messageContent.pic':avatar})
             //正常查询
             let list = await db.collection('new_chat_history').orderBy('timestamp', 'desc').where({
                 channelId: query.channel
