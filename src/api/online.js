@@ -302,36 +302,93 @@ router.post("/update", async (req, res) => {
 
 router.post("/history", async (req, res) => {
     try {
-        const query = req.body;
-        if (query.shopId) {
-            const now = new Date().getTime()
-            let list = await db.collection('online').where({
-                shopId: query.shopId,
-                dueTime: _.lte(now)
-            }).get()
-            for (let i = 0; i < list.data.length; i++) {
-                let detail = await db.collection('detail_record').where({ openId: list.data[i].openId, status: 1 }).get()
-                let userInfo = await db.collection('users').where({ openId: list.data[i].openId }).get()
-                list.data[i].detailRecord = detail.data[0] || {}
-                list.data[i].userInfo = userInfo.data[0] || {}
-                if (detail.data.length > 0) {
-                    let mergedObj = { ...list.data[i], ...detail.data[0] };
-                    if (detail.data[0].image.length == 0) {
-                        if (userInfo.data.length > 0 && userInfo.data[0].avatar) {
-                            mergedObj.image = [{ url: userInfo.data[0].avatar }]
-                        } else {
-                            mergedObj.image = []
-                        }
-                    }
-                    list.data[i] = mergedObj
+        const { shopId, openId } = req.body;
+        if (!shopId) return res.json(fail(401, "参数错误: 缺失 shopId"));
+
+        const now = new Date().getTime();
+        const _ = db.command;
+
+        // 1. 获取该门店已离开的用户记录，排除当前用户自己
+        // 按 dueTime 倒序排序，即最晚离开的人排在最前面
+        let listResult = await db.collection('online')
+            .where({
+                shopId: shopId,
+                dueTime: _.lte(now),
+                openId: _.neq(openId)
+            })
+            .orderBy('dueTime', 'desc')
+            .limit(100)
+            .get();
+
+        let rawList = listResult.data;
+        if (rawList.length === 0) return res.json(ok({ data: [] }));
+
+        // 2. 按 openId 去重
+        // 历史记录中，同一个用户可能多次出入同一门店，这里只保留其最近的一次足迹
+        const uniqueRawList = [];
+        const seenOpenIds = new Set();
+        for (const item of rawList) {
+            if (!seenOpenIds.has(item.openId)) {
+                uniqueRawList.push(item);
+                seenOpenIds.add(item.openId);
+            }
+        }
+
+        // 3. 并行获取关联信息（性能提升：使用 Promise.all 替代循环 await）
+        // 仅处理前 20 条，保证响应速度
+        const processedList = await Promise.all(uniqueRawList.slice(0, 20).map(async (item) => {
+            const targetOpenId = item.openId;
+
+            // 并行查询：用户信息、今日的我、匹配/喜欢状态
+            const [userRes, detailRes, matchRes] = await Promise.all([
+                db.collection('users').where({ openId: targetOpenId }).get(),
+                db.collection('detail_record').where({ openId: targetOpenId, status: 1 }).get(),
+                db.collection('match').where(
+                    _.or([
+                        { openId1: openId, openId2: targetOpenId },
+                        { openId1: targetOpenId, openId2: openId }
+                    ])
+                ).get()
+            ]);
+
+            const userInfo = userRes.data[0] || {};
+            const detail = detailRes.data[0] || {};
+            const matchInfo = matchRes.data[0] || null;
+
+            // 处理匹配状态 (state) 和 喜欢类型 (likeType)
+            let likeType = 0;
+            let state = 0;
+            if (matchInfo) {
+                state = matchInfo.status === 2 ? 1 : 0;
+                if (matchInfo.openId1 === openId) {
+                    likeType = matchInfo.likeType || 0;
                 }
             }
-            list.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            return res.json(ok(list))
-        } else {
-            return res.json(fail(401, "参数错误"))
-        }
-    } catch (e) { console.log(e) }
+
+            // 4. 返回符合 nearList.vue 模板结构的完整对象
+            return {
+                ...item,
+                name: userInfo.name || '在此用户',
+                avatar: userInfo.avatar || '',
+                mood: detail.mood || '今日心情',
+                plan: detail.plan || '今日安排',
+                likeType: likeType,
+                state: state,
+                detailRecord: {
+                    ...detail,
+                    image: (detail.image && detail.image.length > 0)
+                        ? detail.image
+                        : (userInfo.avatar ? [{ url: userInfo.avatar }] : [])
+                }
+            };
+        }));
+
+        return res.json(ok({ data: processedList }));
+
+    } catch (e) {
+        console.error("History API Error:", e);
+        return res.json(fail(500, "服务器内部错误"));
+    }
 })
 
 export default router;
