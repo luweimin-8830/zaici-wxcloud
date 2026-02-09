@@ -88,7 +88,7 @@ router.post("/near", async (req, res) => {
                     list.data[i].channel = ''
                 }
                 let detail = await db.collection('detail_record').where({ openId: list.data[i].openId, status: 1 }).get()
-                let userInfo = await db.collection('users').where({ openid: list.data[i].openId }).get()
+                let userInfo = await db.collection('users').where({ openId: list.data[i].openId }).get()
                 if (userInfo.data.length > 0 && userInfo.data[0].image.length > 0) {
                     list.data[i].score = list.data[i].score + 35
                 }
