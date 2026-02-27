@@ -308,6 +308,13 @@ router.post("/history", async (req, res) => {
         const now = new Date().getTime();
         const _ = db.command;
 
+        // 获取当前仍在线的用户（即 /near 中会出现的人），用于历史记录过滤
+        const activeRes = await db.collection('online').where({
+            dueTime: _.gte(now),
+            openId: _.neq(openId)
+        }).get();
+        const activeOpenIds = new Set((activeRes.data || []).map(item => item.openId));
+
         // 1. 获取该门店已离开的用户记录，排除当前用户自己
         // 按 dueTime 倒序排序，即最晚离开的人排在最前面
         let listResult = await db.collection('online')
@@ -334,9 +341,13 @@ router.post("/history", async (req, res) => {
             }
         }
 
-        // 3. 并行获取关联信息（性能提升：使用 Promise.all 替代循环 await）
+        // 3. 过滤掉当前在线（/near 已出现）的用户
+        const filteredRawList = uniqueRawList.filter(item => !activeOpenIds.has(item.openId));
+        if (filteredRawList.length === 0) return res.json(ok({ data: [] }));
+
+        // 4. 并行获取关联信息（性能提升：使用 Promise.all 替代循环 await）
         // 仅处理前 20 条，保证响应速度
-        const processedList = await Promise.all(uniqueRawList.slice(0, 20).map(async (item) => {
+        const processedList = await Promise.all(filteredRawList.slice(0, 20).map(async (item) => {
             const targetOpenId = item.openId;
 
             // 并行查询：用户信息、今日的我、匹配/喜欢状态
