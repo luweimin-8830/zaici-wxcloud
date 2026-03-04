@@ -280,7 +280,7 @@ router.post("/sendMessage", async (req, res) => {
             "miniprogram_state": "formal",//developer开发版,trial为体验版,formal为正式版
             "lang": "zh_CN",
             "data": {
-                thing1: { "value": `${query.shopName || '附近'}门店的人喜欢了你,快去看看吧`},
+                thing1: { "value": `${query.shopName || '当前'}门店的人喜欢了你,快去看看吧`},
                 time2: { "value": time }
             }
         }
