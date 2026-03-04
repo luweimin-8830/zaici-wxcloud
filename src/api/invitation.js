@@ -34,4 +34,31 @@ router.post("/save", async (req, res) => {
     }
 });
 
+router.post("/update", async (req, res) => {
+    try {
+        const { id, title, imageUrl, activity, qrcode } = req.body;
+        const OPENID = req.headers["x-wx-openid"];
+
+        if (!id) {
+            return res.json(fail(400, "缺少记录ID"));
+        }
+
+        const updateData = {
+            updatedAt: db.serverDate()
+        };
+
+        if (title !== undefined) updateData.title = title;
+        if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+        if (activity !== undefined) updateData.activity = activity;
+        if (qrcode !== undefined) updateData.qrcode = qrcode;
+
+        await db.collection('invitation').doc(id).update(updateData);
+
+        res.json(ok({ message: "邀请函更新成功" }));
+    } catch (e) {
+        console.error("更新邀请函失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
 export default router;
