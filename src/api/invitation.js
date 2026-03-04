@@ -32,7 +32,7 @@ router.post("/save", async (req, res) => {
 
         // 生成小程序码
         try {
-            const qrRes = await axios.post("http://api.weixin.qq.com/wxa/getwxacode", {
+            const qrRes = await axios.post("https://api.weixin.qq.com/wxa/getwxacode", {
                 path: `pages/activityEntry/activityEntry?id=${invitationId}`,
                 width: 430
             }, {
