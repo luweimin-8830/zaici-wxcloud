@@ -10,7 +10,7 @@ const _ = db.command;
 router.post("/saveDistance", async (req, res) => {
     try {
         const query = req.body
-        await db.collection("config").doc("9b5f7bed694e4f060123ee6e76416ebc").update({
+        await db.collection("config").doc("7dc2756e69a7bee40021341f7494b5b1").update({
             distance: query.distance
         })
         res.json(ok("更新成功"))
@@ -19,7 +19,7 @@ router.post("/saveDistance", async (req, res) => {
 
 router.get("/getDistance", async (req, res) => {
     try {
-        const distance = await db.collection("config").doc("9b5f7bed694e4f060123ee6e76416ebc").get()
+        const distance = await db.collection("config").doc("7dc2756e69a7bee40021341f7494b5b1").get()
         res.json(ok(distance.data[0]))
     } catch (e) { console.log(e) }
 })
