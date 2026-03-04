@@ -9,6 +9,7 @@ import chatRouter from "./chat.js";
 import bannerRouter from "./banner.js";
 import configRouter from "./config.js";
 import payRouter from "./pay.js";
+import invitationRouter from "./invitation.js";
 
 const router = Router();
 
@@ -21,5 +22,6 @@ router.use("/chat",chatRouter);
 router.use("/banner",bannerRouter);
 router.use("/config",configRouter);
 router.use("/pay",payRouter);
+router.use("/invitation",invitationRouter);
 
 export default router;
