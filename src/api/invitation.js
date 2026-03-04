@@ -98,4 +98,70 @@ router.post("/update", async (req, res) => {
     }
 });
 
+router.post("/list", async (req, res) => {
+    try {
+        const { page = 1, limit = 10, keyword = "" } = req.body;
+        const skip = (page - 1) * limit;
+        
+        let query = {};
+        if (keyword) {
+            query.title = db.RegExp({
+                regexp: keyword,
+                options: 'i',
+            });
+        }
+
+        const countRes = await db.collection('invitation').where(query).count();
+        const listRes = await db.collection('invitation')
+            .where(query)
+            .orderBy('createdAt', 'desc')
+            .skip(skip)
+            .limit(limit)
+            .get();
+
+        res.json(ok({
+            list: listRes.data,
+            total: countRes.total,
+            page,
+            limit
+        }));
+    } catch (e) {
+        console.error("获取邀请函列表失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
+router.post("/detail", async (req, res) => {
+    try {
+        const { id } = req.body;
+        if (!id) {
+            return res.json(fail(400, "缺少记录ID"));
+        }
+
+        const result = await db.collection('invitation').doc(id).get();
+        if (!result.data || (Array.isArray(result.data) && result.data.length === 0)) {
+            return res.json(fail(404, "记录不存在"));
+        }
+
+        res.json(ok(Array.isArray(result.data) ? result.data[0] : result.data));
+    } catch (e) {
+        console.error("获取邀请函详情失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
+router.post("/del", async (req, res) => {
+    try {
+        const { id } = req.body;
+        if (!id) {
+            return res.json(fail(400, "缺少记录ID"));
+        }
+        await db.collection('invitation').doc(id).remove();
+        res.json(ok({ message: "删除成功" }));
+    } catch (e) {
+        console.error("删除邀请函失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
 export default router;
