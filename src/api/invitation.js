@@ -1,9 +1,11 @@
 import { Router } from "express";
 import { ok, fail } from "../response.js";
-import { getDb, getModels } from "../util/tcb.js";
+import { getDb, getModels, getTcb } from "../util/tcb.js";
 import moment from 'moment-timezone'
+import axios from "axios";
 const router = Router();
 const db = getDb();
+const tcb = getTcb();
 const _ = db.command
 
 router.post("/save", async (req, res) => {
@@ -26,8 +28,38 @@ router.post("/save", async (req, res) => {
         };
 
         const result = await db.collection('invitation').add(data);
+        const invitationId = result.id;
+
+        // 生成小程序码
+        try {
+            const qrRes = await axios.post("http://api.weixin.qq.com/wxa/getwxacode", {
+                path: `pages/activityEntry/activityEntry?id=${invitationId}`,
+                width: 430
+            }, {
+                responseType: 'arraybuffer'
+            });
+
+            const buffer = qrRes.data;
+            
+            // 上传到云存储
+            const uploadRes = await tcb.uploadFile({
+                cloudPath: `qrcode/invitation_${invitationId}.png`,
+                fileContent: Buffer.from(buffer)
+            });
+
+            // 更新记录
+            await db.collection('invitation').doc(invitationId).update({
+                qrcode: uploadRes.fileID,
+                updatedAt: db.serverDate()
+            });
+            
+            return res.json(ok({ id: invitationId, qrcode: uploadRes.fileID, message: "邀请函保存成功" }));
+        } catch (qrErr) {
+            console.error("生成小程序码失败:", qrErr);
+            // 这里不阻塞主流程
+        }
         
-        res.json(ok({ id: result.id, message: "邀请函保存成功" }));
+        res.json(ok({ id: invitationId, message: "邀请函保存成功" }));
     } catch (e) {
         console.error("保存邀请函失败:", e);
         res.json(fail(500, "服务器内部错误"));
