@@ -39,27 +39,32 @@ router.post("/save", async (req, res) => {
                 responseType: 'arraybuffer'
             });
 
-            const buffer = qrRes.data;
-            
-            // 上传到云存储
-            const uploadRes = await tcb.uploadFile({
-                cloudPath: `qrcode/invitation_${invitationId}.png`,
-                fileContent: Buffer.from(buffer)
-            });
+            // 检查是否返回错误信息
+            if (qrRes.headers['content-type'] && qrRes.headers['content-type'].includes('application/json')) {
+                const errData = JSON.parse(Buffer.from(qrRes.data).toString());
+                console.error("微信生成小程序码接口报错:", errData);
+            } else {
+                const buffer = qrRes.data;
+                
+                // 上传到云存储
+                const uploadRes = await tcb.uploadFile({
+                    cloudPath: `qrcode/invitation_${invitationId}.png`,
+                    fileContent: Buffer.from(buffer)
+                });
 
-            // 更新记录
-            await db.collection('invitation').doc(invitationId).update({
-                qrcode: uploadRes.fileID,
-                updatedAt: db.serverDate()
-            });
-            
-            return res.json(ok({ id: invitationId, qrcode: uploadRes.fileID, message: "邀请函保存成功" }));
+                // 更新记录
+                await db.collection('invitation').doc(invitationId).update({
+                    qrcode: uploadRes.fileID,
+                    updatedAt: db.serverDate()
+                });
+                
+                return res.json(ok({ id: invitationId, qrcode: uploadRes.fileID, message: "邀请函保存成功" }));
+            }
         } catch (qrErr) {
-            console.error("生成小程序码失败:", qrErr);
-            // 这里不阻塞主流程
+            console.error("小程序码生成流程异常:", qrErr);
         }
         
-        res.json(ok({ id: invitationId, message: "邀请函保存成功" }));
+        res.json(ok({ id: invitationId, qrcode: "", message: "邀请函保存成功，小程序码生成失败" }));
     } catch (e) {
         console.error("保存邀请函失败:", e);
         res.json(fail(500, "服务器内部错误"));
