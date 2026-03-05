@@ -111,6 +111,75 @@ router.post("/update", async (req, res) => {
     }
 });
 
+router.post("/join", async (req, res) => {
+    try {
+        const { invitationId, nickname, avatar } = req.body;
+        const OPENID = req.headers["x-wx-openid"];
+
+        if (!invitationId) {
+            return res.json(fail(400, "缺少活动ID"));
+        }
+
+        // 1. 检查活动是否存在且在进行中
+        const invRes = await db.collection('invitation').doc(invitationId).get();
+        const invitation = Array.isArray(invRes.data) ? invRes.data[0] : invRes.data;
+        
+        if (!invitation) {
+            return res.json(fail(404, "活动不存在"));
+        }
+        if (invitation.status === "已停止") {
+            return res.json(fail(400, "该活动报名已结束"));
+        }
+
+        // 2. 检查是否已经报名过
+        const checkRes = await db.collection('inviter').where({
+            invitationId,
+            openId: OPENID
+        }).count();
+
+        if (checkRes.total > 0) {
+            return res.json(fail(400, "您已报名该活动，无需重复报名"));
+        }
+
+        // 3. 写入报名表
+        const data = {
+            invitationId,
+            openId: OPENID,
+            nickname: nickname || "匿名用户",
+            avatar: avatar || "",
+            createdAt: db.serverDate(),
+            updatedAt: db.serverDate()
+        };
+
+        await db.collection('inviter').add(data);
+
+        res.json(ok({ message: "报名成功" }));
+    } catch (e) {
+        console.error("报名活动失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
+router.post("/joiners", async (req, res) => {
+    try {
+        const { invitationId } = req.body;
+        if (!invitationId) {
+            return res.json(fail(400, "缺少活动ID"));
+        }
+
+        const result = await db.collection('inviter')
+            .where({ invitationId })
+            .orderBy('createdAt', 'desc')
+            .limit(100)
+            .get();
+
+        res.json(ok(result.data));
+    } catch (e) {
+        console.error("获取报名列表失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
 router.post("/list", async (req, res) => {
     try {
         const { page = 1, limit = 10, keyword = "", activity } = req.body;
