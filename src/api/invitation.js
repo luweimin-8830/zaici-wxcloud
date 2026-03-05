@@ -258,6 +258,27 @@ router.post("/detail", async (req, res) => {
     }
 });
 
+router.post("/checkJoin", async (req, res) => {
+    try {
+        const { invitationId } = req.body;
+        const OPENID = req.headers["x-wx-openid"];
+
+        if (!invitationId) {
+            return res.json(fail(400, "缺少活动ID"));
+        }
+
+        const countRes = await db.collection('inviter').where({
+            invitationId,
+            openId: OPENID
+        }).count();
+
+        res.json(ok({ isJoined: countRes.total > 0 }));
+    } catch (e) {
+        console.error("检查报名状态失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
 router.post("/del", async (req, res) => {
     try {
         const { id } = req.body;
