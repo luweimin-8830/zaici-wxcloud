@@ -113,7 +113,7 @@ router.post("/update", async (req, res) => {
 
 router.post("/list", async (req, res) => {
     try {
-        const { page = 1, limit = 10, keyword = "" } = req.body;
+        const { page = 1, limit = 10, keyword = "", activity } = req.body;
         const skip = (page - 1) * limit;
         
         let query = {};
@@ -123,11 +123,14 @@ router.post("/list", async (req, res) => {
                 options: 'i',
             });
         }
+        if (activity) {
+            query.activity = activity;
+        }
 
         const countRes = await db.collection('invitation').where(query).count();
         const listRes = await db.collection('invitation')
             .where(query)
-            .orderBy('createdAt', 'desc')
+            .orderBy('updatedAt', 'desc')
             .skip(skip)
             .limit(limit)
             .get();
