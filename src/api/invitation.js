@@ -157,6 +157,25 @@ router.post("/join", async (req, res) => {
 
         await db.collection('inviter').add(data);
 
+        // 4. 同步更新用户主表 (与 userInfo.js 字段对齐)
+        const userUpdateData = {
+            updatedAt: db.serverDate()
+        };
+        if (nickname) userUpdateData.name = nickname; // userInfo.js 中使用 name
+        if (avatar) userUpdateData.avatar = avatar;
+        if (company) userUpdateData.company = company;
+        if (department) userUpdateData.department = department;
+
+        await db.collection('users').where({ openId: OPENID }).update(userUpdateData);
+
+        // 5. 如果修改了昵称或头像，同步更新在线表 (对齐 userInfo.js 逻辑)
+        if (nickname || avatar) {
+            const onlineUpdate = {};
+            if (nickname) onlineUpdate.name = nickname;
+            if (avatar) onlineUpdate.avatar = avatar;
+            await db.collection('online').where({ openId: OPENID }).update(onlineUpdate);
+        }
+
         res.json(ok({ message: "报名成功" }));
     } catch (e) {
         console.error("报名活动失败:", e);
