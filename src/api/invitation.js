@@ -10,7 +10,7 @@ const _ = db.command
 
 router.post("/save", async (req, res) => {
     try {
-        const { id, title, imageUrl, activity, status, posterUrl } = req.body;
+        const { id, title, imageUrl, activity, status, posterUrl, requiredFields } = req.body;
         const OPENID = req.headers["x-wx-openid"];
         
         if (!title || !imageUrl || !activity) {
@@ -23,6 +23,7 @@ router.post("/save", async (req, res) => {
             activity,
             status: status || "进行中",
             posterUrl: posterUrl || "",
+            requiredFields: requiredFields || [],
             openId: OPENID,
             updatedAt: db.serverDate()
         };
@@ -84,7 +85,7 @@ router.post("/save", async (req, res) => {
 
 router.post("/update", async (req, res) => {
     try {
-        const { id, title, imageUrl, activity, qrcode, status, posterUrl } = req.body;
+        const { id, title, imageUrl, activity, qrcode, status, posterUrl, requiredFields } = req.body;
         const OPENID = req.headers["x-wx-openid"];
 
         if (!id) {
@@ -101,6 +102,7 @@ router.post("/update", async (req, res) => {
         if (qrcode !== undefined) updateData.qrcode = qrcode;
         if (status !== undefined) updateData.status = status;
         if (posterUrl !== undefined) updateData.posterUrl = posterUrl;
+        if (requiredFields !== undefined) updateData.requiredFields = requiredFields;
 
         await db.collection('invitation').doc(id).update(updateData);
 
@@ -113,7 +115,7 @@ router.post("/update", async (req, res) => {
 
 router.post("/join", async (req, res) => {
     try {
-        const { invitationId, nickname, avatar } = req.body;
+        const { invitationId, nickname, avatar, company, department } = req.body;
         const OPENID = req.headers["x-wx-openid"];
 
         if (!invitationId) {
@@ -147,6 +149,8 @@ router.post("/join", async (req, res) => {
             openId: OPENID,
             nickname: nickname || "匿名用户",
             avatar: avatar || "",
+            company: company || "",
+            department: department || "",
             createdAt: db.serverDate(),
             updatedAt: db.serverDate()
         };
