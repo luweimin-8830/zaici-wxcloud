@@ -10,7 +10,7 @@ const _ = db.command
 
 router.post("/save", async (req, res) => {
     try {
-        const { title, imageUrl, activity } = req.body;
+        const { id, title, imageUrl, activity, status, posterUrl } = req.body;
         const OPENID = req.headers["x-wx-openid"];
         
         if (!title || !imageUrl || !activity) {
@@ -21,14 +21,24 @@ router.post("/save", async (req, res) => {
             title,
             imageUrl,
             activity,
-            qrcode: "", // 留空
+            status: status || "进行中",
+            posterUrl: posterUrl || "",
             openId: OPENID,
-            createdAt: db.serverDate(),
             updatedAt: db.serverDate()
         };
 
-        const result = await db.collection('invitation').add(data);
-        const invitationId = result.id;
+        let invitationId = id;
+        if (id) {
+            // 更新逻辑
+            await db.collection('invitation').doc(id).update(data);
+            return res.json(ok({ id, message: "邀请函更新成功" }));
+        } else {
+            // 新增逻辑
+            data.qrcode = "";
+            data.createdAt = db.serverDate();
+            const result = await db.collection('invitation').add(data);
+            invitationId = result.id;
+        }
 
         // 生成小程序码
         try {
@@ -73,7 +83,7 @@ router.post("/save", async (req, res) => {
 
 router.post("/update", async (req, res) => {
     try {
-        const { id, title, imageUrl, activity, qrcode } = req.body;
+        const { id, title, imageUrl, activity, qrcode, status, posterUrl } = req.body;
         const OPENID = req.headers["x-wx-openid"];
 
         if (!id) {
@@ -88,6 +98,8 @@ router.post("/update", async (req, res) => {
         if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
         if (activity !== undefined) updateData.activity = activity;
         if (qrcode !== undefined) updateData.qrcode = qrcode;
+        if (status !== undefined) updateData.status = status;
+        if (posterUrl !== undefined) updateData.posterUrl = posterUrl;
 
         await db.collection('invitation').doc(id).update(updateData);
 
