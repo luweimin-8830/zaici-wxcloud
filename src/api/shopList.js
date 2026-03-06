@@ -6,6 +6,22 @@ const router = Router();
 const db = getDb();
 const _ = db.command;
 
+router.get("/detail", async (req, res) => {
+    try {
+        const id = req.query._id || req.query.id;
+        if (id) {
+            const result = await db.collection('shop_list_demo').doc(id).get();
+            // TCB doc().get() 返回的是对象，其数据在 data 字段中
+            return res.json(ok(result.data));
+        } else {
+            return res.json(fail(401, "参数错误"))
+        }
+    } catch (e) { 
+        console.error(e); 
+        res.json(fail(500, "获取详情失败")) 
+    }
+})
+
 router.post("/", async (req, res, next) => {
     try {
         const query = req.body;
