@@ -9,15 +9,31 @@ const _ = db.command;
 router.get("/detail", async (req, res) => {
     try {
         const id = req.query._id || req.query.id;
+        console.log("获取门店详情 ID:", id);
         if (id) {
-            const result = await db.collection('shop_list_demo').doc(id).get();
-            // TCB doc().get() 返回的是对象，其数据在 data 字段中
-            return res.json(ok(result.data));
+            // 尝试两种查询方式，兼容某些环境下的差异
+            let result = await db.collection('shop_list_demo').doc(id).get();
+            
+            // 如果 doc().get() 没查到，尝试 where().get()
+            if (!result.data) {
+                const whereResult = await db.collection('shop_list_demo').where({ _id: id }).get();
+                if (whereResult.data && whereResult.data.length > 0) {
+                    result.data = whereResult.data[0];
+                }
+            }
+
+            if (result.data) {
+                console.log("找到门店数据:", result.data.shopname);
+                return res.json(ok(result.data));
+            } else {
+                console.log("未找到门店数据, ID:", id);
+                return res.json(fail(404, "未找到该门店"));
+            }
         } else {
             return res.json(fail(401, "参数错误"))
         }
     } catch (e) { 
-        console.error(e); 
+        console.error("获取详情错误:", e); 
         res.json(fail(500, "获取详情失败")) 
     }
 })
@@ -105,13 +121,21 @@ router.post("/save", async (req, res) => {
     try {
         const query = req.body
         if (query.shopList) {
-            query.shopList.createdAt = new Date()
-            const shopList = await db.collection('shop_list_demo').add(query.shopList);
-            return res.json(ok(shopList))
+            const data = { ...query.shopList };
+            // 清理无用或空字段，防止插入数据库时出错
+            delete data._id; 
+            data.createdAt = new Date();
+            data.updatedAt = new Date();
+            
+            const result = await db.collection('shop_list_demo').add(data);
+            return res.json(ok(result))
         } else {
             return res.json(fail(401, "参数错误"))
         }
-    } catch (e) { console.log(e) }
+    } catch (e) { 
+        console.error("保存门店失败:", e);
+        return res.json(fail(500, "保存门店失败"))
+    }
 })
 
 router.post("/update", async (req, res) => {
