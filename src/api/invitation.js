@@ -377,4 +377,21 @@ router.post("/lottery/detail", async (req, res) => {
     }
 });
 
+/**
+ * 删除抽奖
+ */
+router.post("/lottery/del", async (req, res) => {
+    try {
+        const { id } = req.body;
+        if (!id) {
+            return res.json(fail(400, "缺少抽奖ID"));
+        }
+        await db.collection('lottery').doc(id).remove();
+        res.json(ok({ message: "删除成功" }));
+    } catch (e) {
+        console.error("删除抽奖失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
 export default router;
