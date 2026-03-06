@@ -77,7 +77,7 @@ router.post("/saveBlock", async (req, res) => {
 //删除提示
 router.post("/delInfo", async (req, res) => {
     try {
-        const OPENID = req.body.openId
+        const OPENID = req.headers["x-wx-openid"];
         if (OPENID) {
             await db.collection('information_monitor').where({ openId: OPENID }).remove()
             return res.json(ok("删除成功"))
