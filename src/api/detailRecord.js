@@ -9,8 +9,8 @@ router.post("/get", async (req, res) => {
     try {
         const query = req.body
         if (query.openId) {
-            let detail_record = await db.collection("detail_record").where({ openId: query.openId, status: 1 }).get()
-            let users = await db.collection('users').where({ openId: query.openId }).get()
+            let detail_record = await db.collection("detail_record_demo").where({ openId: query.openId, status: 1 }).get()
+            let users = await db.collection('users_demo').where({ openId: query.openId }).get()
             let info = {}
             if (users.data.length > 0 && detail_record.data.length > 0) {
                 info = detail_record.data[0]
@@ -31,7 +31,7 @@ router.post("/save", async (req, res) => {
     try {
         const query = req.body
         if (query.openId) {
-            let detail_record = await db.collection('detail_record').where({
+            let detail_record = await db.collection('detail_record_demo').where({
                 openId: query.openId,
                 status: 1
             }).get()
@@ -50,10 +50,10 @@ router.post("/save", async (req, res) => {
                     status: 1,
                     createdAt: new Date()
                 }
-                await db.collection('detail_record').add(newDetail)
+                await db.collection('detail_record_demo').add(newDetail)
                 return res.json(ok(newDetail))
             } else {
-                await db.collection('detail_record').doc(detail_record.data[0]._id).update(detail)
+                await db.collection('detail_record_demo').doc(detail_record.data[0]._id).update(detail)
                 return res.json(ok(detail))
             }
         } else {
@@ -66,7 +66,7 @@ router.post("/saveSeat", async (req, res) => {
     try {
         const query = req.body
         if (query.openId) {
-            await db.collection("detail_record").where({ openId: query.openId, status: 1 }).update({
+            await db.collection("detail_record_demo").where({ openId: query.openId, status: 1 }).update({
                 seat: query.seat
             })
             return res.json(ok("更新成功"))
@@ -81,7 +81,7 @@ router.post("/getHash", async (req, res) => {
     try {
         const query = req.body
         if (query.picHash) {
-            const pic = await db.collection("picture_list").where({ picHash: query.picHash }).get()
+            const pic = await db.collection("picture_list_demo").where({ picHash: query.picHash }).get()
             if (pic.data.length > 0) {
                 if (pic.data[0].secCheckStatus = 0) {
                     return res.json(ok({msg:"图片存在违规行为,禁止发布",code:0}))

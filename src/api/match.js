@@ -13,7 +13,7 @@ router.post("/get", async (req, res) => {
     try {
         const query = req.body
         if (query.openId) {
-            let user = await db.collection('match').where(_.and([
+            let user = await db.collection('match_demo').where(_.and([
                 // AND 的第一个条件：status为1
                 { status: query.status },
                 // AND 的第二个条件：字段1或字段2包含'要查询的值'
@@ -24,16 +24,16 @@ router.post("/get", async (req, res) => {
             ])).get()
             let list = []
             let avatar = ''
-            let likeCount = await db.collection('match').where({ status: 1, openId2: query.openId }).get()
+            let likeCount = await db.collection('match_demo').where({ status: 1, openId2: query.openId }).get()
             if (likeCount.data.length > 0) {
                 let likep = likeCount.data[0]
                 if (likep.openId1 == query.openId) {
-                    let r = await db.collection('users').where({ openId: likep.openId2 }).get()
+                    let r = await db.collection('users_demo').where({ openId: likep.openId2 }).get()
                     if (r.data.length > 0) {
                         avatar = r.data[0].avatar
                     }
                 } else if (likep.openId2 == query.openId) {
-                    let r = await db.collection('users').where({ openId: likep.openId1 }).get()
+                    let r = await db.collection('users_demo').where({ openId: likep.openId1 }).get()
                     if (r.data.length > 0) {
                         avatar = r.data[0].avatar
                     }
@@ -58,10 +58,10 @@ router.post("/get", async (req, res) => {
                     } else {
                         id = query.openId
                     }
-                    let person = await db.collection('users').where({
+                    let person = await db.collection('users_demo').where({
                         openId: id
                     }).get()
-                    let detail = await db.collection('detail_record').where({ openId: id, status: 1 }).get()
+                    let detail = await db.collection('detail_record_demo').where({ openId: id, status: 1 }).get()
                     list[i].userInfo = person.data[0] || {}
                     list[i].detailRecord = detail.data[0] || {}
 
@@ -69,12 +69,12 @@ router.post("/get", async (req, res) => {
                         list[i].avatar = person.data[0].avatar
                         list[i].name = person.data[0].name == null ? "" : person.data[0].name
                     }
-                    let chatContent = await db.collection('new_chat_history').where({ channelId: list[i].channel }).orderBy('timestamp', 'desc').limit(5).get();
+                    let chatContent = await db.collection('new_chat_history_demo').where({ channelId: list[i].channel }).orderBy('timestamp', 'desc').limit(5).get();
                     if (chatContent.data.length != 0) {
                         list[i].content = chatContent.data
                         list[i].contentTime = chatContent.data[0] == null ? '' : chatContent.data[0].messageContent.id
                     }
-                    let chatList = await db.collection('new_chat_history').where({ channelId: list[i].channel, senderOpenID: id }).get()
+                    let chatList = await db.collection('new_chat_history_demo').where({ channelId: list[i].channel, senderOpenID: id }).get()
                     let wRead = 0
                     if (chatList.data.length > 0) {
                         chatList.data.forEach(item => {
@@ -112,12 +112,12 @@ router.post("/add", async (req, res) => {
         let openId2 = query.openId2
         let operation = query.operation
         let channel = query.channel
-        let matchList = await db.collection("match").where({ openId1: openId1, openId2: openId2 }).get()
-        let matchList1 = await db.collection("match").where({ openId1: openId2, openId2: openId1 }).get()
+        let matchList = await db.collection("match_demo").where({ openId1: openId1, openId2: openId2 }).get()
+        let matchList1 = await db.collection("match_demo").where({ openId1: openId2, openId2: openId1 }).get()
         let status = ''
         if (matchList.data.length > 0) {
             if (operation == 1) {
-                await db.collection('match').where({ channel: query.channel })
+                await db.collection('match_demo').where({ channel: query.channel })
                     .update({
                         status: 1,
                         likeType: query.likeType,
@@ -125,22 +125,22 @@ router.post("/add", async (req, res) => {
                     })
                 status = 1
                 if (query.likeType == 2) {
-                    let user = await db.collection("users").where({ openId: query.openId2 }).get()
+                    let user = await db.collection("users_demo").where({ openId: query.openId2 }).get()
                     changeData(query, user)
                 }
             } else if (operation == 0) {
-                await db.collection('match').doc(matchList.data[0]._id)
+                await db.collection('match_demo').doc(matchList.data[0]._id)
                     .remove()
                 status = 3
             }
         } else if (matchList1.data.length > 0) {
             if (operation == 1) {
-                await db.collection('match').doc(matchList1.data[0]._id)
+                await db.collection('match_demo').doc(matchList1.data[0]._id)
                     .update({
                         status: 2,
                         updatedAt: new Date(),
                     })
-                const result = await db.collection('users').where({ openId: openId1 }).get();
+                const result = await db.collection('users_demo').where({ openId: openId1 }).get();
                 const user = result.data[0]
                 models.new_chat_history.create({
                     data: {
@@ -168,16 +168,16 @@ router.post("/add", async (req, res) => {
                 })
                 status = 2
                 if (query.likeType == 1) {
-                    let user = await db.collection("users").where({ openId: query.openId1 }).get()
+                    let user = await db.collection("users_demo").where({ openId: query.openId1 }).get()
                     changeData(query, user)
                 }
             } else if (operation == 0) {
-                await db.collection('match').doc(matchList1.data[0]._id)
+                await db.collection('match_demo').doc(matchList1.data[0]._id)
                     .remove()
                 status = 3
             }
         } else if (matchList.data.length == 0 && matchList1.data.length == 0) {
-            await db.collection('match').add({
+            await db.collection('match_demo').add({
                 channel: channel,
                 openId1: openId1,
                 openId2: openId2,
@@ -188,10 +188,10 @@ router.post("/add", async (req, res) => {
             })
             status = 1
             if (query.likeType == 2) {
-                let user = await db.collection("users").where({ openId: query.openId2 }).get()
+                let user = await db.collection("users_demo").where({ openId: query.openId2 }).get()
                 changeData(query, user)
             }
-            await db.collection('information_monitor').add({
+            await db.collection('information_monitor_demo').add({
                 openId: openId2,
                 source: "match",
                 createdAt: new Date()
@@ -206,7 +206,7 @@ router.post("/del", async (req, res) => {
     try {
         const query = req.body
         if (query.channel) {
-            await db.collection('match').where({ channel: query.channel }).remove()
+            await db.collection('match_demo').where({ channel: query.channel }).remove()
             return res.json(ok("解除匹配成功"))
         } else {
             return res.json(401, "参数错误")
@@ -219,7 +219,7 @@ router.post("/getLikeMatch", async (req, res) => {
     try {
         const query = req.body
         if (query.openId) {
-            const userQuery = await db.collection('match').where({ openId2: query.openId, status: 1 }).orderBy('createdAt', 'desc').get()
+            const userQuery = await db.collection('match_demo').where({ openId2: query.openId, status: 1 }).orderBy('createdAt', 'desc').get()
             let list = []
             if (userQuery.data.length > 0) {
                 for (let i = 0; i < userQuery.data.length; i++) {
@@ -227,8 +227,8 @@ router.post("/getLikeMatch", async (req, res) => {
                     if (userQuery.data[i].likeType == 2) {
                         userQuery.data[i].score = userQuery.data[i].score + 100
                     }
-                    let person = await db.collection('users').where({ openId: userQuery.data[i].openId1 }).get()
-                    let detail = await db.collection('detail_record').where({ openId: userQuery.data[i].openId1, status: 1 }).get()
+                    let person = await db.collection('users_demo').where({ openId: userQuery.data[i].openId1 }).get()
+                    let detail = await db.collection('detail_record_demo').where({ openId: userQuery.data[i].openId1, status: 1 }).get()
                     if (detail.data.length > 0) {
                         if (detail.data[0].image.length > 0) {
                             userQuery.data[i].score = userQuery.data[i].score + 35
@@ -301,13 +301,13 @@ export default router;
 async function changeData(event, user) {
     if (event.likeType == 1) {
         let data = user.data[0].beLike + 1
-        await db.collection("users").doc(user.data[0]._id).update({
+        await db.collection("users_demo").doc(user.data[0]._id).update({
             beLike: data
         })
     } else if (event.likeType == 2) {
         let data = user.data[0].beSuperLike + 1
         console.log(data)
-        await db.collection("users").doc(user.data[0]._id).update({
+        await db.collection("users_demo").doc(user.data[0]._id).update({
             beSuperLike: data
         })
 

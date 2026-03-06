@@ -123,15 +123,15 @@ router.post("/getOtherUserInfo", async (req, res) => {
             return res.json(fail(401, "参数错误"))
         }
         // 1) 查 online 记录
-        const onlineDoc = await db.collection('online').doc(query.id).get()
+        const onlineDoc = await db.collection('online_demo').doc(query.id).get()
         if (!onlineDoc.data || onlineDoc.data.length === 0) {
             return res.json(fail(404, "未找到用户在线记录"))
         }
         let otherUser = onlineDoc.data[0]
 
         // 2) 获取个人资料与用户信息
-        const detailRes = await db.collection('detail_record').where({ openId: otherUser.openId, status: 1 }).get()
-        const userRes = await db.collection('users').where({ openId: otherUser.openId }).get()
+        const detailRes = await db.collection('detail_record_demo').where({ openId: otherUser.openId, status: 1 }).get()
+        const userRes = await db.collection('users_demo').where({ openId: otherUser.openId }).get()
         otherUser.detailRecord = detailRes.data[0] || {}
         otherUser.userInfo = userRes.data[0] || {}
 
@@ -149,8 +149,8 @@ router.post("/getOtherUserInfo", async (req, res) => {
         otherUser.likeType = 0
         otherUser.channel = ''
         if (viewerOpenId) {
-            const matchList = await db.collection("match").where({ openId1: viewerOpenId, openId2: otherUser.openId }).get()
-            const matchList1 = await db.collection("match").where({ openId1: otherUser.openId, openId2: viewerOpenId }).get()
+            const matchList = await db.collection("match_demo").where({ openId1: viewerOpenId, openId2: otherUser.openId }).get()
+            const matchList1 = await db.collection("match_demo").where({ openId1: otherUser.openId, openId2: viewerOpenId }).get()
             if (matchList.data.length > 0 || matchList1.data.length > 0) {
                 if ((matchList.data.length > 0 && matchList.data[0].status == 2) || (matchList1.data.length > 0 && matchList1.data[0].status == 2)) {
                     otherUser.state = 1
@@ -185,8 +185,8 @@ router.post("/getInfo", async (req, res) => {
         const query = req.body;
         if (query.openId) {
             let data = {}
-            const userInfo = await db.collection('users').where({ openId: query.openId }).get();
-            const detail = await db.collection('detail_record').where({ openId: query.openId }).get();
+            const userInfo = await db.collection('users_demo').where({ openId: query.openId }).get();
+            const detail = await db.collection('detail_record_demo').where({ openId: query.openId }).get();
             data.userInfo = userInfo;
             data.detailRecord = detail;
             res.json(ok(data))

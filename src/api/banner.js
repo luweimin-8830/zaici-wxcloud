@@ -7,7 +7,7 @@ const db = getDb();
 
 router.get("/", async (req, res) => {
     try {
-        let banner = await db.collection('banner').get()
+        let banner = await db.collection('banner_demo').get()
         return res.json(ok(banner.data))
     } catch (e) { console.log(e) }
 })
@@ -22,7 +22,7 @@ router.post("/save", async (req, res) => {
             if (updateData.interval) {
                 updateData.interval = Number(updateData.interval);
             }
-            await db.collection('banner').doc( bannerDate._id ).update({
+            await db.collection('banner_demo').doc( bannerDate._id ).update({
                 ...updateData,
                 updatedAt: new Date()
             })
@@ -41,7 +41,7 @@ router.post("/del", async (req, res) => {
     try {
         const query = req.body
         if (query._id) {
-            await db.collection('banner').where({ _id: query._id }).remove()
+            await db.collection('banner_demo').where({ _id: query._id }).remove()
             return res.json(ok("删除成功"))
         }
     } catch (e) { console.log(e) }

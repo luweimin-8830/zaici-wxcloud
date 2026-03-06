@@ -17,7 +17,7 @@ router.post("/get", async (req, res) => {
             // const chatHistory = await db.collection('new_chat_history').where({sendOpenID:OPENID})
             // .update({'messageContent.pic':avatar})
             //正常查询
-            let list = await db.collection('new_chat_history').orderBy('timestamp', 'desc').where({
+            let list = await db.collection('new_chat_history_demo').orderBy('timestamp', 'desc').where({
                 channelId: query.channel
             }).skip(query.length).limit(query.cont).get()
             return res.json(ok(list))
@@ -31,7 +31,7 @@ router.post("/update", async (req, res) => {
     try {
         const query = req.body
         if (query.channelId) {
-            const chat = await db.collection('new_chat_history')
+            const chat = await db.collection('new_chat_history_demo')
                 .where(_.and([
                     { channelId: query.channelId },
                     { receiverOpenID: query.openId }
@@ -48,7 +48,7 @@ router.post("/updateState", async (req, res) => {
     try {
         const query = req.body
         if (query.channelId) {
-            const chat = await db.collection('new_chat_history')
+            const chat = await db.collection('new_chat_history_demo')
                 .where(_.and([
                     { channelId: query.channelId },
                     { "messageContent.id": query.id }
@@ -66,7 +66,7 @@ router.post("/saveBlock", async (req, res) => {
     try {
         const query = req.body
         if (query.openId && query.blockId) {
-            await db.collection('block_list').add({ openId: query.openId, blockId: query.blockId, createdAt: new Date() })
+            await db.collection('block_list_demo').add({ openId: query.openId, blockId: query.blockId, createdAt: new Date() })
             return res.json(ok("屏蔽成功"))
         } else {
             return res.json(fail(401, "参数错误"))
@@ -79,7 +79,7 @@ router.post("/delInfo", async (req, res) => {
     try {
         const OPENID = req.headers["x-wx-openid"];
         if (OPENID) {
-            await db.collection('information_monitor').where({ openId: OPENID }).remove()
+            await db.collection('information_monitor_demo').where({ openId: OPENID }).remove()
             return res.json(ok("删除成功"))
         } else {
             return res.json(fail(401, "参数错误"))

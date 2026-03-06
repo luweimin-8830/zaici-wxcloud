@@ -11,7 +11,7 @@ router.post("/status", async (req, res) => {
         const query = req.body;
 
         if (query.openId) {
-            let user = await db.collection('online').where({
+            let user = await db.collection('online_demo').where({
                 openId: query.openId,
                 dueTime: _.gte(Date.now())
             }).get()
@@ -35,7 +35,7 @@ router.post("/near", async (req, res) => {
             let longitude = typeof query.longitude == "number" ? query.longitude : Number(query.longitude);
             let latitude = typeof query.latitude == "number" ? query.latitude : Number(query.latitude);
             const now = new Date().getTime()
-            let list = await db.collection('online').aggregate()
+            let list = await db.collection('online_demo').aggregate()
                 .geoNear({
                     distanceField: "distance", // 输出的每个记录中 distance 即是与给定点的距离
                     spherical: true,
@@ -51,10 +51,10 @@ router.post("/near", async (req, res) => {
                     flag: 2
                 })
                 .end()
-            let blockList = await db.collection('block_list').where({ openId: query.openId }).get()
+            let blockList = await db.collection('block_list_demo').where({ openId: query.openId }).get()
             for (let i = 0; i < list.data.length; i++) {
-                let matchList = await db.collection("match").where({ openId1: query.openId, openId2: list.data[i].openId }).get()
-                let matchList1 = await db.collection("match").where({ openId1: list.data[i].openId, openId2: query.openId }).get()
+                let matchList = await db.collection("match_demo").where({ openId1: query.openId, openId2: list.data[i].openId }).get()
+                let matchList1 = await db.collection("match_demo").where({ openId1: list.data[i].openId, openId2: query.openId }).get()
                 if (matchList.data.length > 0 || matchList1.data.length > 0) {
                     if ((matchList.data.length > 0 && matchList.data[0].status == 2) || (matchList1.data.length > 0 && matchList1.data[0].status == 2)) {
                         list.data[i].state = 1
@@ -87,8 +87,8 @@ router.post("/near", async (req, res) => {
                     list.data[i].likeType = 0
                     list.data[i].channel = ''
                 }
-                let detail = await db.collection('detail_record').where({ openId: list.data[i].openId, status: 1 }).get()
-                let userInfo = await db.collection('users').where({ openId: list.data[i].openId }).get()
+                let detail = await db.collection('detail_record_demo').where({ openId: list.data[i].openId, status: 1 }).get()
+                let userInfo = await db.collection('users_demo').where({ openId: list.data[i].openId }).get()
                 if (userInfo.data.length > 0 && userInfo.data[0].image.length > 0) {
                     list.data[i].score = list.data[i].score + 35
                 }
@@ -135,18 +135,18 @@ router.post("/shop", async (req, res) => {
         if (query.shopId) {
             const now = new Date().getTime()
             let userList = []
-            let list = await db.collection('online').where({
+            let list = await db.collection('online_demo').where({
                 shopId: query.shopId,
                 status: '在线',
                 dueTime: _.gte(now),
                 openId: _.neq(query.openId),
                 flag: 1
             }).get()
-            let blockList = await db.collection('block_list').where({ openId: query.openId }).get()
+            let blockList = await db.collection('block_list_demo').where({ openId: query.openId }).get()
             for (let i = 0; i < list.data.length; i++) {
                 list.data[i].score = 0
-                let matchList = await db.collection("match").where({ openId1: query.openId, openId2: list.data[i].openId }).get()
-                let matchList1 = await db.collection("match").where({ openId1: list.data[i].openId, openId2: query.openId }).get()
+                let matchList = await db.collection("match_demo").where({ openId1: query.openId, openId2: list.data[i].openId }).get()
+                let matchList1 = await db.collection("match_demo").where({ openId1: list.data[i].openId, openId2: query.openId }).get()
                 if (matchList.data.length > 0 || matchList1.data.length > 0) {
                     if ((matchList.data.length > 0 && matchList.data[0].status == 2) || (matchList1.data.length > 0 && matchList1.data[0].status == 2)) {
                         list.data[i].state = 1
@@ -181,8 +181,8 @@ router.post("/shop", async (req, res) => {
                     list.data[i].channel = ''
                 }
 
-                let detail = await db.collection('detail_record').where({ openId: list.data[i].openId, status: 1 }).get()
-                let userInfo = await db.collection('users').where({ openId: list.data[i].openId }).get()
+                let detail = await db.collection('detail_record_demo').where({ openId: list.data[i].openId, status: 1 }).get()
+                let userInfo = await db.collection('users_demo').where({ openId: list.data[i].openId }).get()
                 list.data[i].detailRecord = detail.data[0] || {}
                 list.data[i].userInfo = userInfo.data[0] || {}
                 if (userInfo.data.length > 0 && userInfo.data[0].image.length > 0) {
@@ -230,7 +230,7 @@ router.post("/shop", async (req, res) => {
 router.post("/save", async (req, res) => {
     try {
         const query = req.body
-        let user = await db.collection('users').where({
+        let user = await db.collection('users_demo').where({
             openId: query.openId,
         }).get()
         let name = ''
@@ -253,7 +253,7 @@ router.post("/save", async (req, res) => {
             location = query.location
         }
         // 把之前的在线记录设为结束
-        await db.collection('online').where({
+        await db.collection('online_demo').where({
             openId: query.openId,
             dueTime: _.gt(Date.now())
         }).update({
@@ -261,7 +261,7 @@ router.post("/save", async (req, res) => {
         })
 
         // 新增一条进店记录
-        await db.collection('online').add({
+        await db.collection('online_demo').add({
             openId: query.openId,
             shopId: query.shopId,
             shopName: query.shopName,
@@ -274,7 +274,7 @@ router.post("/save", async (req, res) => {
             dueTime: due,
             flag: query.flag
         })
-        let online = await db.collection('online').where({
+        let online = await db.collection('online_demo').where({
             openId: query.openId,
             dueTime: db.command.gte(Date.now())
         }).get()
@@ -288,7 +288,7 @@ router.post("/update", async (req, res) => {
         const query = req.body
         if (query.id) {
             const now = new Date()
-            let online = await db.collection('online').doc(query.id).update({
+            let online = await db.collection('online_demo').doc(query.id).update({
                 dueTime: now
             })
             const data = { code: 0, online: online, message: "更新成功" }
@@ -309,7 +309,7 @@ router.post("/history", async (req, res) => {
         const _ = db.command;
 
         // 获取当前仍在线的用户（即 /near 中会出现的人），用于历史记录过滤
-        const activeRes = await db.collection('online').where({
+        const activeRes = await db.collection('online_demo').where({
             dueTime: _.gte(now),
             openId: _.neq(openId)
         }).get();
@@ -317,7 +317,7 @@ router.post("/history", async (req, res) => {
 
         // 1. 获取该门店已离开的用户记录，排除当前用户自己
         // 按 dueTime 倒序排序，即最晚离开的人排在最前面
-        let listResult = await db.collection('online')
+        let listResult = await db.collection('online_demo')
             .where({
                 shopId: shopId,
                 dueTime: _.lte(now),
@@ -352,9 +352,9 @@ router.post("/history", async (req, res) => {
 
             // 并行查询：用户信息、今日的我、匹配/喜欢状态
             const [userRes, detailRes, matchRes] = await Promise.all([
-                db.collection('users').where({ openId: targetOpenId }).get(),
-                db.collection('detail_record').where({ openId: targetOpenId, status: 1 }).get(),
-                db.collection('match').where(
+                db.collection('users_demo').where({ openId: targetOpenId }).get(),
+                db.collection('detail_record_demo').where({ openId: targetOpenId, status: 1 }).get(),
+                db.collection('match_demo').where(
                     _.or([
                         { openId1: openId, openId2: targetOpenId },
                         { openId1: targetOpenId, openId2: openId }

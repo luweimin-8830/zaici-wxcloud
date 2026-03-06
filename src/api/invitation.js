@@ -31,13 +31,13 @@ router.post("/save", async (req, res) => {
         let invitationId = id;
         if (id) {
             // 更新逻辑
-            await db.collection('invitation').doc(id).update(data);
+            await db.collection('invitation_demo').doc(id).update(data);
             return res.json(ok({ id, message: "邀请函更新成功" }));
         } else {
             // 新增逻辑
             data.qrcode = "";
             data.createdAt = db.serverDate();
-            const result = await db.collection('invitation').add(data);
+            const result = await db.collection('invitation_demo').add(data);
             invitationId = result.id;
         }
 
@@ -65,7 +65,7 @@ router.post("/save", async (req, res) => {
                 });
 
                 // 更新记录
-                await db.collection('invitation').doc(invitationId).update({
+                await db.collection('invitation_demo').doc(invitationId).update({
                     qrcode: uploadRes.fileID,
                     updatedAt: db.serverDate()
                 });
@@ -104,7 +104,7 @@ router.post("/update", async (req, res) => {
         if (posterUrl !== undefined) updateData.posterUrl = posterUrl;
         if (requiredFields !== undefined) updateData.requiredFields = requiredFields;
 
-        await db.collection('invitation').doc(id).update(updateData);
+        await db.collection('invitation_demo').doc(id).update(updateData);
 
         res.json(ok({ message: "邀请函更新成功" }));
     } catch (e) {
@@ -123,7 +123,7 @@ router.post("/join", async (req, res) => {
         }
 
         // 1. 检查活动是否存在且在进行中
-        const invRes = await db.collection('invitation').doc(invitationId).get();
+        const invRes = await db.collection('invitation_demo').doc(invitationId).get();
         const invitation = Array.isArray(invRes.data) ? invRes.data[0] : invRes.data;
         
         if (!invitation) {
@@ -134,7 +134,7 @@ router.post("/join", async (req, res) => {
         }
 
         // 2. 检查是否已经报名过
-        const checkRes = await db.collection('inviter').where({
+        const checkRes = await db.collection('inviter_demo').where({
             invitationId,
             openId: OPENID
         }).count();
@@ -155,7 +155,7 @@ router.post("/join", async (req, res) => {
             updatedAt: db.serverDate()
         };
 
-        await db.collection('inviter').add(data);
+        await db.collection('inviter_demo').add(data);
 
         // 4. 同步更新用户主表 (与 userInfo.js 字段对齐)
         const userUpdateData = {
@@ -166,14 +166,14 @@ router.post("/join", async (req, res) => {
         if (company) userUpdateData.company = company;
         if (department) userUpdateData.department = department;
 
-        await db.collection('users').where({ openId: OPENID }).update(userUpdateData);
+        await db.collection('users_demo').where({ openId: OPENID }).update(userUpdateData);
 
         // 5. 如果修改了昵称或头像，同步更新在线表 (对齐 userInfo.js 逻辑)
         if (nickname || avatar) {
             const onlineUpdate = {};
             if (nickname) onlineUpdate.name = nickname;
             if (avatar) onlineUpdate.avatar = avatar;
-            await db.collection('online').where({ openId: OPENID }).update(onlineUpdate);
+            await db.collection('online_demo').where({ openId: OPENID }).update(onlineUpdate);
         }
 
         res.json(ok({ message: "报名成功" }));
@@ -190,7 +190,7 @@ router.post("/joiners", async (req, res) => {
             return res.json(fail(400, "缺少活动ID"));
         }
 
-        const result = await db.collection('inviter')
+        const result = await db.collection('inviter_demo')
             .where({ invitationId })
             .orderBy('createdAt', 'desc')
             .limit(100)
@@ -219,8 +219,8 @@ router.post("/list", async (req, res) => {
             query.activity = activity;
         }
 
-        const countRes = await db.collection('invitation').where(query).count();
-        const listRes = await db.collection('invitation')
+        const countRes = await db.collection('invitation_demo').where(query).count();
+        const listRes = await db.collection('invitation_demo')
             .where(query)
             .orderBy('updatedAt', 'desc')
             .skip(skip)
@@ -246,7 +246,7 @@ router.post("/detail", async (req, res) => {
             return res.json(fail(400, "缺少记录ID"));
         }
 
-        const result = await db.collection('invitation').doc(id).get();
+        const result = await db.collection('invitation_demo').doc(id).get();
         if (!result.data || (Array.isArray(result.data) && result.data.length === 0)) {
             return res.json(fail(404, "记录不存在"));
         }
@@ -267,7 +267,7 @@ router.post("/checkJoin", async (req, res) => {
             return res.json(fail(400, "缺少活动ID"));
         }
 
-        const countRes = await db.collection('inviter').where({
+        const countRes = await db.collection('inviter_demo').where({
             invitationId,
             openId: OPENID
         }).count();
@@ -285,7 +285,7 @@ router.post("/del", async (req, res) => {
         if (!id) {
             return res.json(fail(400, "缺少记录ID"));
         }
-        await db.collection('invitation').doc(id).remove();
+        await db.collection('invitation_demo').doc(id).remove();
         res.json(ok({ message: "删除成功" }));
     } catch (e) {
         console.error("删除邀请函失败:", e);
@@ -318,11 +318,11 @@ router.post("/lottery/save", async (req, res) => {
         };
 
         if (id) {
-            await db.collection('lottery').doc(id).update(data);
+            await db.collection('lottery_demo').doc(id).update(data);
             return res.json(ok({ id, message: "抽奖更新成功" }));
         } else {
             data.createdAt = db.serverDate();
-            const result = await db.collection('lottery').add(data);
+            const result = await db.collection('lottery_demo').add(data);
             return res.json(ok({ id: result.id, message: "抽奖创建成功" }));
         }
     } catch (e) {
@@ -341,7 +341,7 @@ router.post("/lottery/list", async (req, res) => {
             return res.json(fail(400, "缺少活动ID"));
         }
 
-        const result = await db.collection('lottery')
+        const result = await db.collection('lottery_demo')
             .where({ invitationId })
             .orderBy('createdAt', 'desc')
             .get();
@@ -363,7 +363,7 @@ router.post("/lottery/detail", async (req, res) => {
             return res.json(fail(400, "缺少抽奖ID"));
         }
 
-        const result = await db.collection('lottery').doc(id).get();
+        const result = await db.collection('lottery_demo').doc(id).get();
         const data = Array.isArray(result.data) ? result.data[0] : result.data;
         
         if (!data) {
@@ -386,7 +386,7 @@ router.post("/lottery/del", async (req, res) => {
         if (!id) {
             return res.json(fail(400, "缺少抽奖ID"));
         }
-        await db.collection('lottery').doc(id).remove();
+        await db.collection('lottery_demo').doc(id).remove();
         res.json(ok({ message: "删除成功" }));
     } catch (e) {
         console.error("删除抽奖失败:", e);

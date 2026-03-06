@@ -19,7 +19,7 @@ router.post("/", async (req, res, next) => {
             var SHOW_AS_KM = false
         }
         if (query.longitude) {
-            let merchantList = await db.collection("shop_list")
+            let merchantList = await db.collection("shop_list_demo")
                 .aggregate()
                 .geoNear({
                     distanceField: "distance", // 输出的每个记录中 distance 即是与给定点的距离
@@ -36,7 +36,7 @@ router.post("/", async (req, res, next) => {
                 let shopList = merchantList.data
                 const now = new Date().getTime()
                 const shopIds = shopList.map(shop => shop._id)
-                const onlineStats = await db.collection('online').aggregate()
+                const onlineStats = await db.collection('online_demo').aggregate()
                     .match({
                         shopId: _.in(shopIds),
                         status: '在线',
@@ -90,7 +90,7 @@ router.post("/save", async (req, res) => {
         const query = req.body
         if (query.shopList) {
             query.shopList.createdAt = new Date()
-            const shopList = await db.collection('shop_list').add(query.shopList);
+            const shopList = await db.collection('shop_list_demo').add(query.shopList);
             return res.json(ok(shopList))
         } else {
             return res.json(fail(401, "参数错误"))
@@ -108,7 +108,7 @@ router.post("/update", async (req, res) => {
             delete obj.endtime
             let id = obj._id
             delete obj._id
-            const shopList = await db.collection('shop_list').where({ _id: id }).update({
+            const shopList = await db.collection('shop_list_demo').where({ _id: id }).update({
                 ...obj,
                 updatedAt: new Date()
             })
@@ -123,7 +123,7 @@ router.post("/del", async (req, res) => {
     try {
         const query = req.body
         if (query.id) {
-            const shopList = await db.collection('shop_list').where({ _id: query.id }).remove();
+            const shopList = await db.collection('shop_list_demo').where({ _id: query.id }).remove();
             return res.json(ok("删除成功"))
         } else {
             return res.json(fail(401,"参数错误"))
@@ -147,14 +147,14 @@ router.post("/admin", async (req, res) => {
             };
         }
         const [listResult, countResult] = await Promise.all([
-            db.collection("shop_list")
+            db.collection("shop_list_demo")
                 .where(query)                   
                 .orderBy('create_time', 'desc') 
                 .skip(skip)                     
                 .limit(limit)                   
                 .get(),
             
-            db.collection("shop_list")
+            db.collection("shop_list_demo")
                 .where(query)                   
                 .count()
         ]);
