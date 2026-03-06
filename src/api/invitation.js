@@ -293,4 +293,88 @@ router.post("/del", async (req, res) => {
     }
 });
 
+// --- 抽奖相关接口 ---
+
+/**
+ * 保存/更新抽奖配置
+ */
+router.post("/lottery/save", async (req, res) => {
+    try {
+        const { id, invitationId, prizeName, winnerCount, winners, status } = req.body;
+        const OPENID = req.headers["x-wx-openid"];
+
+        if (!invitationId || !prizeName || !winnerCount) {
+            return res.json(fail(400, "参数缺失: invitationId, prizeName, winnerCount 为必填项"));
+        }
+
+        const data = {
+            invitationId,
+            prizeName,
+            winnerCount: parseInt(winnerCount),
+            winners: winners || [], // 中奖人 openId 列表
+            status: status || "进行中",
+            creatorOpenId: OPENID,
+            updatedAt: db.serverDate()
+        };
+
+        if (id) {
+            await db.collection('lottery').doc(id).update(data);
+            return res.json(ok({ id, message: "抽奖更新成功" }));
+        } else {
+            data.createdAt = db.serverDate();
+            const result = await db.collection('lottery').add(data);
+            return res.json(ok({ id: result.id, message: "抽奖创建成功" }));
+        }
+    } catch (e) {
+        console.error("保存抽奖失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
+/**
+ * 获取活动下的抽奖列表
+ */
+router.post("/lottery/list", async (req, res) => {
+    try {
+        const { invitationId } = req.body;
+        if (!invitationId) {
+            return res.json(fail(400, "缺少活动ID"));
+        }
+
+        const result = await db.collection('lottery')
+            .where({ invitationId })
+            .orderBy('createdAt', 'desc')
+            .get();
+
+        res.json(ok(result.data));
+    } catch (e) {
+        console.error("获取抽奖列表失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
+/**
+ * 获取抽奖详情
+ */
+router.post("/lottery/detail", async (req, res) => {
+    try {
+        const { id } = req.body;
+        if (!id) {
+            return res.json(fail(400, "缺少抽奖ID"));
+        }
+
+        const result = await db.collection('lottery').doc(id).get();
+        const data = Array.isArray(result.data) ? result.data[0] : result.data;
+        
+        if (!data) {
+            return res.json(fail(404, "抽奖不存在"));
+        }
+
+        res.json(ok(data));
+    } catch (e) {
+        console.error("获取抽奖详情失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
 export default router;
