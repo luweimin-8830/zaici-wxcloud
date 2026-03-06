@@ -28,13 +28,16 @@ router.post("/save", async (req, res) => {
             })
             return res.json(ok("更新成功"))
         } else {
-            await db.collection("banner").add({
+            await db.collection("banner_demo").add({
                 ...query.banner,
                 createdAt: new Date(),
             })
             return res.json(ok("新增成功"))
         }
-    } catch (e) { console.log(e) }
+    } catch (e) { 
+        console.log(e);
+        return res.json(fail("服务器错误"));
+    }
 })
 
 router.post("/del", async (req, res) => {
