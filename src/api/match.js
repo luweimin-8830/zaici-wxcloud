@@ -160,7 +160,7 @@ router.post("/add", async (req, res) => {
                     }
                 })
                 //传一个红点
-                models.information_monitor.create({
+                models.information_monitor_demo.create({
                     data: {
                         "openId": openId2,
                         "source": "chat",

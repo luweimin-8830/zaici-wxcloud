@@ -103,7 +103,7 @@ app.post("/webhook", verifySignature, async (req, res) => {
                         }
                     }
                 })
-                models.information_monitor.create({
+                models.information_monitor_demo.create({
                     data: {
                         "openId": _message.receiverOpenID,
                         "source": "chat",

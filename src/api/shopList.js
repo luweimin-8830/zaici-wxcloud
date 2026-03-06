@@ -11,20 +11,25 @@ router.get("/detail", async (req, res) => {
         const id = req.query._id || req.query.id;
         console.log("获取门店详情 ID:", id);
         if (id) {
-            // 尝试两种查询方式，兼容某些环境下的差异
-            let result = await db.collection('shop_list_demo').doc(id).get();
+            let shopData = null;
             
-            // 如果 doc().get() 没查到，尝试 where().get()
-            if (!result.data) {
-                const whereResult = await db.collection('shop_list_demo').where({ _id: id }).get();
-                if (whereResult.data && whereResult.data.length > 0) {
-                    result.data = whereResult.data[0];
+            // 方式1：doc().get()
+            const docRes = await db.collection('shop_list_demo').doc(id).get();
+            if (docRes.data) {
+                shopData = Array.isArray(docRes.data) ? docRes.data[0] : docRes.data;
+            }
+            
+            // 方式2：fallback to where().get()
+            if (!shopData) {
+                const whereRes = await db.collection('shop_list_demo').where({ _id: id }).get();
+                if (whereRes.data && whereRes.data.length > 0) {
+                    shopData = whereRes.data[0];
                 }
             }
 
-            if (result.data) {
-                console.log("找到门店数据:", result.data.shopname);
-                return res.json(ok(result.data));
+            if (shopData) {
+                console.log("找到门店数据:", shopData.shopname);
+                return res.json(ok(shopData));
             } else {
                 console.log("未找到门店数据, ID:", id);
                 return res.json(fail(404, "未找到该门店"));
