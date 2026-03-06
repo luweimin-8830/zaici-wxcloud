@@ -10,7 +10,7 @@ router.post("/", async (req, res, next) => {
     try {
         const OPENID = req.headers["x-wx-openid"];
         if (!OPENID) { return res.json(fail(401, "未获取到openId,请确认")) }
-        const userQuery = await db.collection('users').where({ openId: OPENID }).get()
+        const userQuery = await db.collection('users_demo').where({ openId: OPENID }).get()
         const userName = "用户" + OPENID.slice(-4)
         let userObj = {}
         if (userQuery.data.length === 0) {
@@ -26,7 +26,7 @@ router.post("/", async (req, res, next) => {
                 name: userName,
                 avatar: "https://cloud1-1gth9cum37c9015c-1380861431.tcloudbaseapp.com/logo.png?sign=44d3bfbeb3cb05b7ff6fce3460a8bcdf&t=1765181560"
             }
-            const addRes = await db.collection('users').add(newUser)
+            const addRes = await db.collection('users_demo').add(newUser)
             userObj = { ...newUser, _id: addRes.id }
         } else {
             //老用户
@@ -44,7 +44,7 @@ router.post("/save", async (req, res) => {
     try {
         const query = req.body
         if (query.openId) {
-            await db.collection('users').where({ openId: query.openId })
+            await db.collection('users_demo').where({ openId: query.openId })
                 .update({
                     [query.key]: query.key == 'birthday' ? query.data ? new Date(query.data) : null : query.data,
                     updatedAt: new Date(),
@@ -67,12 +67,12 @@ router.post("/superLike", async (req, res) => {
     try {
         const query = req.body
         if (query.openId) {
-            let user = await db.collection('users').where({ openId: query.openId }).get()
+            let user = await db.collection('users_demo').where({ openId: query.openId }).get()
             if (user.data[0].superLike == 0) {
                 return res.json(ok("superLike次数已用完"))
             } else if (user.data[0].superLike > 0) {
                 user.data[0].superLike = user.data[0].superLike - 1
-                await db.collection('users').where({ openId: query.openId }).update({
+                await db.collection('users_demo').where({ openId: query.openId }).update({
                     superLike: user.data[0].superLike
                 })
                 return res.json(ok("super Like次数-1"))
@@ -89,9 +89,9 @@ router.post("/addSuperLike", async (req, res) => {
         const query = req.body
         if (query.userList.length > 0) {
             for (let i = 0; i < query.userList.length; i++) {
-                let user = await db.collection('users').where({ openId: query.userList[i].openId }).get()
+                let user = await db.collection('users_demo').where({ openId: query.userList[i].openId }).get()
                 let total = user.data[0].superLike + query.total
-                await db.collection('users').where({ openId: query.userList[i].openId }).update({
+                await db.collection('users_demo').where({ openId: query.userList[i].openId }).update({
                     superLike: total
                 })
             }
