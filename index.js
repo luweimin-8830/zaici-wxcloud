@@ -3,12 +3,11 @@ import crypto from "crypto"; //用Nodejs的加密包
 import morgan from "morgan";
 import apiRouter from "./src/api/index.js";
 import { notFoundHandler, errorHandler } from "./src/error.js";
-import { getDb, getModels ,getTcb} from "./src/util/tcb.js";
+import { getDb, getTcb} from "./src/util/tcb.js";
 import {ok,fail} from "./src/response.js";
 
 
 const db = getDb();//初始化数据库，之后可能直接从模型倒下去
-const models = getModels(); //简化模型调用
 const SECRET_KEY = "37b6c7156eaa44d0"; //GoEasy API请求检验
 const app = express(); //创建 express instance
 const tcb = getTcb()
@@ -47,17 +46,10 @@ app.post("/censor", async (req, res) => {
     // 2. 微信内容安全检查回调
     if (MsgType === "event" && Event === "wxa_media_check") {
         res.status(200).send();
-        models.picture_list.update({
-            data: {
-                secCheckStatus: result.suggest == "pass" ? 1 : 0
-            },
-            filter: {
-                where: {
-                    traceID: {
-                        $eq: trace_id
-                    }
-                }
-            }
+        db.collection("picture_list").where({
+            traceID: trace_id
+        }).update({
+            secCheckStatus: result.suggest == "pass" ? 1 : 0
         }).then(data => { return data })
     } else if(MsgType === "text" || MsgType === "image" || (Event === "user_enter_tempsession" && MsgType === "event")) {
         console.log("进入消息分发")
@@ -86,28 +78,24 @@ app.post("/webhook", verifySignature, async (req, res) => {
         content.forEach(
             (message, index) => {
                 let _message = JSON.parse(message.content);
-                models.new_chat_history.create({
-                    data: {
-                        receiverOpenID: _message.receiverOpenID,
-                        senderOpenID: _message.openID,
-                        channelId: message.channel,
-                        timestamp: message.timestamp,
-                        messageContent: {
-                            "id": _message.id,
-                            "content": _message.content,
-                            "type": _message.type,
-                            "contentType": _message.contentType,
-                            "pic": _message.pic,
-                            "name": _message.name,
-                            "state": _message.state
-                        }
+                db.collection("new_chat_history_demo").add({
+                    receiverOpenID: _message.receiverOpenID,
+                    senderOpenID: _message.openID,
+                    channelId: message.channel,
+                    timestamp: message.timestamp,
+                    messageContent: {
+                        "id": _message.id,
+                        "content": _message.content,
+                        "type": _message.type,
+                        "contentType": _message.contentType,
+                        "pic": _message.pic,
+                        "name": _message.name,
+                        "state": _message.state
                     }
                 })
-                models.information_monitor_demo.create({
-                    data: {
-                        "openId": _message.receiverOpenID,
-                        "source": "chat",
-                    }
+                db.collection("information_monitor_demo").add({
+                    "openId": _message.receiverOpenID,
+                    "source": "chat",
                 })
             }
         )
@@ -125,16 +113,10 @@ app.post("/startCensor", async (req, res) => {
                 message: "fileid is required"
             });
         } else {
-            let uploadedFile = await models.picture_list.get({
-                filter: {
-                    where: {
-                        picHash: {
-                            $eq: digest,
-                        }
-                    }
-                }
-            });
-            if (Object.entries(uploadedFile.data) == 0) {
+            let uploadedFile = await db.collection("picture_list").where({
+                picHash: digest
+            }).get();
+            if (uploadedFile.data.length == 0) {
                 res.status(200).json({
                     code: 200,
                     message: "there is no same file uploaded",
@@ -144,7 +126,7 @@ app.post("/startCensor", async (req, res) => {
                 return res.status(200).json({
                     code: 200,
                     message: "the same file has been uploaded already",
-                    secCheckStatus: uploadedFile.data.secCheckStatus
+                    secCheckStatus: uploadedFile.data[0].secCheckStatus
                 })
             }
         }
@@ -178,13 +160,11 @@ app.post("/startCensor", async (req, res) => {
     }
     let wx_backend_response_json = await wx_backend_response.json();
     console.log(wx_backend_response_json);
-    models.picture_list.create({
-        data: {
-            userPicUrl: fileid,
-            secCheckStatus: 2,
-            traceID: wx_backend_response_json.trace_id,
-            picHash: digest,
-        }
+    db.collection("picture_list").add({
+        userPicUrl: fileid,
+        secCheckStatus: 2,
+        traceID: wx_backend_response_json.trace_id,
+        picHash: digest,
     })
 
 });

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ok, fail } from "../response.js";
-import { getDb, getModels } from "../util/tcb.js";
+import { getDb } from "../util/tcb.js";
 
 const router = Router();
 const db = getDb();

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import axios from "axios";
 import { ok, fail } from "../response.js";
-import { getDb, getModels } from "../util/tcb.js";
+import { getDb } from "../util/tcb.js";
 
 const router = Router();
 const db = getDb();
@@ -32,7 +32,7 @@ router.post("/", async (req, res, next) => {
             //老用户
             const existingUser = userQuery.data[0];
             const docId = existingUser._id;
-            await db.collection('users').doc(docId).update({ lastLogin: new Date() });
+            await db.collection('users_demo').doc(docId).update({ lastLogin: new Date() });
             userObj = { ...existingUser, lastLogin: new Date() };
         }
 
@@ -50,7 +50,7 @@ router.post("/save", async (req, res) => {
                     updatedAt: new Date(),
                 })
             if (query.key == 'avatar' || query.key == 'name') {
-                await db.collection('online').where({ openId: query.openId })
+                await db.collection('online_demo').where({ openId: query.openId })
                     .update({
                         [query.key]: query.data
                     })

@@ -1,12 +1,11 @@
 import { Router } from "express";
 import { ok, fail } from "../response.js";
-import { getDb, getModels } from "../util/tcb.js";
+import { getDb } from "../util/tcb.js";
 import { sort } from "./online.js";
 
 const router = Router();
 const db = getDb();
 const _ = db.command;
-const models = getModels();
 
 //获取匹配
 router.post("/get", async (req, res) => {
@@ -142,29 +141,25 @@ router.post("/add", async (req, res) => {
                     })
                 const result = await db.collection('users_demo').where({ openId: openId1 }).get();
                 const user = result.data[0]
-                models.new_chat_history.create({
-                    data: {
-                        receiverOpenID: openId2,
-                        senderOpenID: openId1,
-                        channelId: channel,
-                        timestamp: new Date().getTime(),
-                        messageContent: {
-                            "id": new Date().getTime(),
-                            "content": "我们可以开始聊天了,开始发送第一条消息吧",
-                            "type": 1,
-                            "contentType": 'text',
-                            "pic": user.avatar,
-                            "name": user.name,
-                            "state": 0
-                        }
+                db.collection("new_chat_history").add({
+                    receiverOpenID: openId2,
+                    senderOpenID: openId1,
+                    channelId: channel,
+                    timestamp: new Date().getTime(),
+                    messageContent: {
+                        "id": new Date().getTime(),
+                        "content": "我们可以开始聊天了,开始发送第一条消息吧",
+                        "type": 1,
+                        "contentType": 'text',
+                        "pic": user.avatar,
+                        "name": user.name,
+                        "state": 0
                     }
                 })
                 //传一个红点
-                models.information_monitor_demo.create({
-                    data: {
-                        "openId": openId2,
-                        "source": "chat",
-                    }
+                db.collection("information_monitor_demo").add({
+                    "openId": openId2,
+                    "source": "chat",
                 })
                 status = 2
                 if (query.likeType == 1) {
