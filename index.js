@@ -8,7 +8,7 @@ import {ok,fail} from "./src/response.js";
 
 
 const db = getDb();//初始化数据库，之后可能直接从模型倒下去
-const SECRET_KEY = "37b6c7156eaa44d0"; //GoEasy API请求检验
+const SECRET_KEY = "e42487a150c54d35"; //GoEasy API请求检验
 const app = express(); //创建 express instance
 const tcb = getTcb()
 app.use(express.urlencoded({ extended: false })); //启用 URLEncode 反序列化
