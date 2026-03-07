@@ -8,24 +8,47 @@ const _ = db.command;
 
 router.post("/get", async (req, res) => {
     try {
-        const query = req.body
-        const OPENID = req.headers['x-wx-openid']
-        if (query.channel) {
-            //未来这里是个大坑,已解决
-            // const user = await db.collection('users').where({openId:OPENID}).get()
-            // const avatar = user.data[0].avatar
-            // const chatHistory = await db.collection('new_chat_history').where({sendOpenID:OPENID})
-            // .update({'messageContent.pic':avatar})
-            //正常查询
-            let list = await db.collection('new_chat_history_demo').orderBy('timestamp', 'desc').where({
-                channelId: query.channel
-            }).skip(query.length).limit(query.cont).get()
-            return res.json(ok(list))
-        } else {
-            res.json(fail(401, "参数错误"))
+        const { channel, length, cont } = req.body;
+        if (!channel) return res.json(fail(400, "缺少频道ID"));
+
+        const list = await db.collection('new_chat_history_demo')
+            .where({ channelId: channel })
+            .orderBy('timestamp', 'desc')
+            .skip(length || 0)
+            .limit(cont || 20)
+            .get();
+            
+        return res.json(ok(list));
+    } catch (e) {
+        console.error("获取聊天记录失败:", e);
+        res.json(fail(500, "服务器错误"));
+    }
+});
+
+// 保存消息到数据库
+router.post("/send", async (req, res) => {
+    try {
+        const { channelId, senderOpenID, receiverOpenID, messageContent } = req.body;
+        if (!channelId || !senderOpenID || !receiverOpenID) {
+            return res.json(fail(400, "参数错误"));
         }
-    } catch (e) { console.log(e) }
-})
+
+        const data = {
+            channelId,
+            senderOpenID,
+            receiverOpenID,
+            messageContent,
+            timestamp: messageContent.id || Date.now(),
+            createdAt: new Date()
+        };
+
+        const result = await db.collection('new_chat_history_demo').add(data);
+        return res.json(ok(result));
+    } catch (e) {
+        console.error("保存消息失败:", e);
+        res.json(fail(500, "服务器错误"));
+    }
+});
 
 router.post("/update", async (req, res) => {
     try {
