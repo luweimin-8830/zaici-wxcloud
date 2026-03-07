@@ -205,7 +205,7 @@ router.post("/joiners", async (req, res) => {
 
 router.post("/list", async (req, res) => {
     try {
-        const { page = 1, limit = 10, keyword = "", activity } = req.body;
+        const { page = 1, limit = 10, keyword = "", activity, status } = req.body;
         const skip = (page - 1) * limit;
         
         let query = {};
@@ -217,6 +217,9 @@ router.post("/list", async (req, res) => {
         }
         if (activity) {
             query.activity = activity;
+        }
+        if (status) {
+            query.status = status;
         }
 
         const countRes = await db.collection('invitation_demo').where(query).count();
