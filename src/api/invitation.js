@@ -310,11 +310,44 @@ router.post("/lottery/save", async (req, res) => {
             return res.json(fail(400, "参数缺失: invitationId, prizeName, winnerCount 为必填项"));
         }
 
+        let finalWinners = winners || [];
+
+        // 如果状态变更为“已结束”且没有传入中奖名单，则执行自动抽奖逻辑
+        if (status === '已结束' && (!winners || winners.length === 0)) {
+            // 1. 获取活动对应的门店ID
+            const invRes = await db.collection('invitation_demo').doc(invitationId).get();
+            const invitation = Array.isArray(invRes.data) ? invRes.data[0] : invRes.data;
+            
+            if (invitation && invitation.activity) {
+                const shopId = invitation.activity;
+                const now = Date.now();
+
+                // 2. 获取当前门店在线的人员列表
+                const onlineRes = await db.collection('online_demo').where({
+                    shopId: shopId,
+                    dueTime: _.gte(now)
+                }).get();
+
+                const onlineUsers = onlineRes.data || [];
+
+                if (onlineUsers.length > 0) {
+                    // 3. 随机抽取
+                    // 过滤掉创建者（可选，通常建议过滤掉管理员/创建者）
+                    const candidates = onlineUsers.filter(u => u.openId !== OPENID);
+                    const pool = candidates.length > 0 ? candidates : onlineUsers;
+                    
+                    // 洗牌算法
+                    const shuffled = pool.sort(() => 0.5 - Math.random());
+                    finalWinners = shuffled.slice(0, parseInt(winnerCount)).map(u => u.name || '神秘嘉宾');
+                }
+            }
+        }
+
         const data = {
             invitationId,
             prizeName,
             winnerCount: parseInt(winnerCount),
-            winners: winners || [], // 中奖人 openId 列表
+            winners: finalWinners,
             status: status || "进行中",
             creatorOpenId: OPENID,
             updatedAt: db.serverDate()
