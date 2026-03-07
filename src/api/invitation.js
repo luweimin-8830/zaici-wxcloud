@@ -312,8 +312,8 @@ router.post("/lottery/save", async (req, res) => {
 
         let finalWinners = winners || [];
 
-        // 如果状态变更为“已结束”且没有传入中奖名单，则执行自动抽奖逻辑
-        if (status === '已结束' && (!winners || winners.length === 0)) {
+        // 如果状态变更为“finished”且没有传入中奖名单，则执行自动抽奖逻辑
+        if (status === 'finished' && (!winners || winners.length === 0)) {
             // 1. 获取活动对应的门店ID
             const invRes = await db.collection('invitation_demo').doc(invitationId).get();
             const invitation = Array.isArray(invRes.data) ? invRes.data[0] : invRes.data;
@@ -372,17 +372,45 @@ router.post("/lottery/save", async (req, res) => {
  */
 router.post("/lottery/list", async (req, res) => {
     try {
-        const { invitationId } = req.body;
-        if (!invitationId) {
-            return res.json(fail(400, "缺少活动ID"));
+        const { invitationId, shopId, status, page = 1, limit = 10 } = req.body;
+        const skip = (page - 1) * limit;
+
+        let query = {};
+        if (invitationId) query.invitationId = invitationId;
+        if (status) query.status = status;
+
+        // 如果传入了门店ID，先通过邀请函表找到该门店的所有邀请函ID
+        if (shopId) {
+            const invitations = await db.collection('invitation_demo').where({
+                activity: shopId
+            }).get();
+            const ids = invitations.data.map(i => i._id);
+            
+            if (ids.length === 0) {
+                return res.json(ok({
+                    list: [],
+                    total: 0,
+                    page,
+                    limit
+                }));
+            }
+            query.invitationId = _.in(ids);
         }
 
-        const result = await db.collection('lottery_demo')
-            .where({ invitationId })
+        const countRes = await db.collection('lottery_demo').where(query).count();
+        const listRes = await db.collection('lottery_demo')
+            .where(query)
             .orderBy('createdAt', 'desc')
+            .skip(skip)
+            .limit(limit)
             .get();
 
-        res.json(ok(result.data));
+        res.json(ok({
+            list: listRes.data,
+            total: countRes.total,
+            page,
+            limit
+        }));
     } catch (e) {
         console.error("获取抽奖列表失败:", e);
         res.json(fail(500, "服务器内部错误"));
