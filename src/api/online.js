@@ -132,99 +132,99 @@ router.post("/near", async (req, res) => {
 router.post("/shop", async (req, res) => {
     try {
         const query = req.body;
-        if (query.shopId) {
-            const now = new Date().getTime()
-            let userList = []
-            let list = await db.collection('online_demo').where({
-                shopId: query.shopId,
-                status: '在线',
-                dueTime: _.gte(now),
-                openId: _.neq(query.openId),
-                flag: 1
-            }).get()
-            let blockList = await db.collection('block_list_demo').where({ openId: query.openId }).get()
-            for (let i = 0; i < list.data.length; i++) {
-                list.data[i].score = 0
-                let matchList = await db.collection("match_demo").where({ openId1: query.openId, openId2: list.data[i].openId }).get()
-                let matchList1 = await db.collection("match_demo").where({ openId1: list.data[i].openId, openId2: query.openId }).get()
-                if (matchList.data.length > 0 || matchList1.data.length > 0) {
-                    if ((matchList.data.length > 0 && matchList.data[0].status == 2) || (matchList1.data.length > 0 && matchList1.data[0].status == 2)) {
-                        list.data[i].state = 1
-
-                        if (matchList.data.length > 0) {
-                            list.data[i].likeType = matchList.data[0].likeType
-                            list.data[i].channel = matchList.data[0].channel
-                        } else {
-                            list.data[i].likeType = 0
-                            list.data[i].channel = matchList1.data[0].channel
-                        }
-
-                    } else if (matchList.data.length > 0 && matchList.data[0].status == 1) {
-                        list.data[i].state = 0
-                        list.data[i].likeType = matchList.data[0].likeType
-                        list.data[i].channel = matchList.data[0].channel
-                    } else if (matchList1.data.length > 0) {
-                        list.data[i].state = 0
-                        list.data[i].likeType = 0
-                        list.data[i].channel = matchList1.data[0].channel
-                    } else {
-                        list.data[i].state = 0
-                        list.data[i].likeType = 0
-                        list.data[i].channel = ''
-                    }
-                    if (list.data[i].likeType == 2 && matchList.data.length > 0) {
-                        list.data[i].score = 100
-                    }
-                } else {
-                    list.data[i].state = 0
-                    list.data[i].likeType = 0
-                    list.data[i].channel = ''
-                }
-
-                let detail = await db.collection('detail_record_demo').where({ openId: list.data[i].openId, status: 1 }).get()
-                let userInfo = await db.collection('users_demo').where({ openId: list.data[i].openId }).get()
-                list.data[i].detailRecord = detail.data[0] || {}
-                list.data[i].userInfo = userInfo.data[0] || {}
-                if (userInfo.data.length > 0 && userInfo.data[0].image.length > 0) {
-                    list.data[i].score = list.data[i].score + 35
-                }
-                if (detail.data.length > 0) {
-                    let mergedObj = { ...list.data[i], ...detail.data[0] };
-                    if (detail.data[0].image.length > 0) {
-                        list.data[i].score = list.data[i].score + 35
-                    }
-                    if (detail.data[0].image.length == 0) {
-                        if (userInfo.data.length > 0 && userInfo.data[0].avatar) {
-                            mergedObj.image = [{ url: userInfo.data[0].avatar }]
-                        } else {
-                            mergedObj.image = []
-                        }
-                    }
-                    list.data[i] = mergedObj
-                }
-
-                if (blockList.data.length > 0) {
-                    let flag = true
-                    blockList.data.forEach((e) => {
-                        if (e.blockId == list.data[i].openId) {
-                            flag = false
-                        }
-                    })
-                    if (flag) {
-                        userList.push(list.data[i])
-                    }
-                } else {
-                    userList.push(list.data[i])
-                }
-            }
-
-            list.data = sort(userList)
-            // list.data = userList
-            return res.json(ok(list))
-        } else {
-            return res.json(fail(401, "参数错误"))
+        const openId = req.headers["x-wx-openid"] || query.openId;
+        
+        if (!query.shopId) {
+            return res.json(fail(401, "参数错误: 缺少 shopId"))
         }
-    } catch (e) { console.log(e) }
+
+        const now = new Date().getTime()
+        let list = await db.collection('online_demo').where({
+            shopId: query.shopId,
+            status: '在线',
+            dueTime: _.gte(now),
+            openId: _.neq(openId),
+            flag: 1
+        }).get()
+
+        if (!list.data || list.data.length === 0) {
+            return res.json(ok({ data: [] }))
+        }
+
+        let blockList = await db.collection('block_list_demo').where({ openId: openId }).get()
+        const blockIds = (blockList.data || []).map(b => b.blockId)
+
+        // 限制处理数量，防止循环过大导致超时 (102002 错误通常是因为处理太久导致网关超时)
+        const rawUsers = list.data.filter(u => !blockIds.includes(u.openId)).slice(0, 50);
+
+        const userList = await Promise.all(rawUsers.map(async (user) => {
+            const targetOpenId = user.openId;
+            user.score = 0;
+
+            try {
+                // 并行获取关联信息
+                const [match1, match2, detailRes, userRes] = await Promise.all([
+                    db.collection("match_demo").where({ openId1: openId, openId2: targetOpenId }).get(),
+                    db.collection("match_demo").where({ openId1: targetOpenId, openId2: openId }).get(),
+                    db.collection('detail_record_demo').where({ openId: targetOpenId, status: 1 }).get(),
+                    db.collection('users_demo').where({ openId: targetOpenId }).get()
+                ]);
+
+                const matchList = match1.data || [];
+                const matchList1 = match2.data || [];
+                const detail = detailRes.data[0] || {};
+                const userInfo = userRes.data[0] || {};
+
+                // 匹配状态逻辑
+                if (matchList.length > 0 || matchList1.length > 0) {
+                    const isMatched = (matchList[0]?.status === 2 || matchList1[0]?.status === 2);
+                    user.state = isMatched ? 1 : 0;
+                    user.likeType = matchList.length > 0 ? (matchList[0].likeType || 0) : 0;
+                    user.channel = matchList.length > 0 ? (matchList[0].channel || '') : (matchList1[0]?.channel || '');
+                    
+                    if (user.likeType === 2 && matchList.length > 0) {
+                        user.score += 100;
+                    }
+                } else {
+                    user.state = 0;
+                    user.likeType = 0;
+                    user.channel = '';
+                }
+
+                user.detailRecord = detail;
+                user.userInfo = userInfo;
+
+                if (userInfo.avatar || (userInfo.image && userInfo.image.length > 0)) {
+                    user.score += 35;
+                }
+                
+                if (Object.keys(detail).length > 0) {
+                    const merged = { ...user, ...detail };
+                    if (detail.image && detail.image.length > 0) {
+                        merged.score += 35;
+                    }
+                    // 补全图片展示逻辑
+                    if (!detail.image || detail.image.length === 0) {
+                        merged.image = userInfo.avatar ? [{ url: userInfo.avatar }] : [];
+                    }
+                    return merged;
+                }
+                return user;
+            } catch (err) {
+                console.error(`Process user ${targetOpenId} failed:`, err);
+                return user;
+            }
+        }));
+
+        const result = {
+            data: sort(userList)
+        };
+        return res.json(ok(result))
+
+    } catch (e) {
+        console.error("Shop API System Error:", e);
+        return res.json(fail(500, "系统错误"));
+    }
 })
 
 router.post("/save", async (req, res) => {
