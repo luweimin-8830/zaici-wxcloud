@@ -10,7 +10,7 @@ const _ = db.command
 
 router.post("/save", async (req, res) => {
     try {
-        const { id, title, imageUrl, activity, status, posterUrl, requiredFields } = req.body;
+        const { id, title, imageUrl, activity, status, posterUrl, requiredFields, startTime, endTime } = req.body;
         const OPENID = req.headers["x-wx-openid"];
         
         if (!title || !imageUrl || !activity) {
@@ -24,6 +24,8 @@ router.post("/save", async (req, res) => {
             status: status || "进行中",
             posterUrl: posterUrl || "",
             requiredFields: requiredFields || [],
+            startTime: startTime || "",
+            endTime: endTime || "",
             openId: OPENID,
             updatedAt: db.serverDate()
         };
@@ -85,7 +87,7 @@ router.post("/save", async (req, res) => {
 
 router.post("/update", async (req, res) => {
     try {
-        const { id, title, imageUrl, activity, qrcode, status, posterUrl, requiredFields } = req.body;
+        const { id, title, imageUrl, activity, qrcode, status, posterUrl, requiredFields, startTime, endTime } = req.body;
         const OPENID = req.headers["x-wx-openid"];
 
         if (!id) {
@@ -103,6 +105,8 @@ router.post("/update", async (req, res) => {
         if (status !== undefined) updateData.status = status;
         if (posterUrl !== undefined) updateData.posterUrl = posterUrl;
         if (requiredFields !== undefined) updateData.requiredFields = requiredFields;
+        if (startTime !== undefined) updateData.startTime = startTime;
+        if (endTime !== undefined) updateData.endTime = endTime;
 
         await db.collection('invitation_demo').doc(id).update(updateData);
 
