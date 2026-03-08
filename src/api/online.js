@@ -139,13 +139,19 @@ router.post("/shop", async (req, res) => {
         }
 
         const now = new Date().getTime()
-        let list = await db.collection('online_demo').where({
+        let whereQuery = {
             shopId: query.shopId,
             status: '在线',
             dueTime: _.gte(now),
-            openId: _.neq(openId),
             flag: 1
-        }).get()
+        }
+        
+        // 默认排除自己，除非显式要求包含
+        if (!query.includeSelf) {
+            whereQuery.openId = _.neq(openId)
+        }
+
+        let list = await db.collection('online_demo').where(whereQuery).get()
 
         if (!list.data || list.data.length === 0) {
             return res.json(ok({ data: [] }))
