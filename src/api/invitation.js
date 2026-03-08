@@ -67,7 +67,7 @@ router.post("/save", async (req, res) => {
             const qrRes = await axios.post("http://api.weixin.qq.com/wxa/getwxacode", {
                 path: `pages/activityEntry/activityEntry?id=${invitationId}`,
                 width: 430,
-                env_version:"trial"
+                env_version:"develop" //体验版为 "trial"
             }, {
                 responseType: 'arraybuffer'
             });
