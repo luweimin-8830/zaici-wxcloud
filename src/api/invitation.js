@@ -258,6 +258,16 @@ router.post("/list", async (req, res) => {
             status: computeActivityStatus(item)
         }));
 
+        // 排序逻辑：进行中(0) > 即将开始(1) > 已结束/已截止(2)
+        listWithStatus.sort((a, b) => {
+            const getWeight = (s) => {
+                if (s.includes("开始")) return 1;
+                if (s.includes("结束") || s.includes("截止") || s.includes("停止")) return 2;
+                return 0; // 默认为进行中，优先级最高
+            };
+            return getWeight(a.status) - getWeight(b.status);
+        });
+
         res.json(ok({
             list: listWithStatus,
             total: countRes.total,
@@ -439,6 +449,16 @@ router.post("/lottery/list", async (req, res) => {
             ...item,
             status: computeActivityStatus(item)
         }));
+
+        // 排序逻辑：进行中(0) > 即将开始(1) > 已结束/已截止(2)
+        listWithStatus.sort((a, b) => {
+            const getWeight = (s) => {
+                if (s.includes('开始')) return 1;
+                if (s.includes('结束') || s.includes('截止') || s.includes('停止')) return 2;
+                return 0; // 默认为进行中，优先级最高
+            };
+            return getWeight(a.status) - getWeight(b.status);
+        });
 
         res.json(ok({
             list: listWithStatus,
