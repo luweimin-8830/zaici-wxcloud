@@ -8,6 +8,25 @@ const db = getDb();
 const tcb = getTcb();
 const _ = db.command
 
+// 辅助函数：计算活动的动态状态
+const computeActivityStatus = (item) => {
+    const now = moment().tz('Asia/Shanghai');
+    const start = item.startTime ? moment(item.startTime) : null;
+    const end = item.endTime ? moment(item.endTime) : null;
+
+    if (item.status === '已停止') return '已截止报名';
+    
+    if (start && now.isBefore(start)) {
+        return start.format('MM月DD日 HH:mm') + ' 开始';
+    }
+    
+    if (end && now.isAfter(end)) {
+        return '已结束';
+    }
+    
+    return item.status || '进行中';
+};
+
 router.post("/save", async (req, res) => {
     try {
         const { id, title, imageUrl, activity, status, posterUrl, requiredFields, startTime, endTime } = req.body;
@@ -134,7 +153,7 @@ router.post("/join", async (req, res) => {
             return res.json(fail(404, "活动不存在"));
         }
         if (invitation.status === "已停止") {
-            return res.json(fail(400, "该活动报名已结束"));
+            return res.json(fail(400, "该活动报名已截止"));
         }
 
         // 2. 检查是否已经报名过
@@ -234,8 +253,13 @@ router.post("/list", async (req, res) => {
             .limit(limit)
             .get();
 
+        const listWithStatus = listRes.data.map(item => ({
+            ...item,
+            status: computeActivityStatus(item)
+        }));
+
         res.json(ok({
-            list: listRes.data,
+            list: listWithStatus,
             total: countRes.total,
             page,
             limit
@@ -258,7 +282,9 @@ router.post("/detail", async (req, res) => {
             return res.json(fail(404, "记录不存在"));
         }
 
-        res.json(ok(Array.isArray(result.data) ? result.data[0] : result.data));
+        const data = Array.isArray(result.data) ? result.data[0] : result.data;
+        data.status = computeActivityStatus(data);
+        res.json(ok(data));
     } catch (e) {
         console.error("获取邀请函详情失败:", e);
         res.json(fail(500, "服务器内部错误"));
@@ -409,8 +435,13 @@ router.post("/lottery/list", async (req, res) => {
             .limit(limit)
             .get();
 
+        const listWithStatus = listRes.data.map(item => ({
+            ...item,
+            status: computeActivityStatus(item)
+        }));
+
         res.json(ok({
-            list: listRes.data,
+            list: listWithStatus,
             total: countRes.total,
             page,
             limit
