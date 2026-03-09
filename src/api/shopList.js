@@ -213,6 +213,35 @@ router.post("/admin", async (req, res) => {
     } catch (e) { console.log(e) }
 })
 
+router.get("/moments", async (req, res) => {
+    try {
+        const { shopId, page = 1, limit = 10 } = req.query;
+        if (!shopId) return res.json(fail(401, "缺少门店ID"));
+
+        const skip = (Number(page) - 1) * Number(limit);
+        
+        // 聚合查询，关联用户信息
+        const result = await db.collection('album_demo')
+            .aggregate()
+            .match({ shopId, status: 1 })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(Number(limit))
+            .lookup({
+                from: 'users_demo', // 假设用户信息在 online_demo 中，或者其他用户表
+                localField: 'openId',
+                foreignField: 'openId',
+                as: 'userInfo'
+            })
+            .end();
+
+        return res.json(ok(result.data));
+    } catch (e) {
+        console.error("获取动态失败:", e);
+        return res.json(fail(500, "获取失败"));
+    }
+});
+
 router.post("/publishMoment", async (req, res) => {
     try {
         const { shopId, openId, title, imageList } = req.body;
