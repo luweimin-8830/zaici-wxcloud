@@ -148,9 +148,11 @@ router.post("/update", async (req, res) => {
         const query = req.body
         if (query.shopList._id) {
             let obj = query.shopList
+            // 基础信息字段
             delete obj.createdAt
             delete obj.starttime
             delete obj.endtime
+            // 相册相关字段 (albumName, albumStatus) 会通过 obj 自动更新
             let id = obj._id
             delete obj._id
             const shopList = await db.collection('shop_list_demo').where({ _id: id }).update({
@@ -210,5 +212,30 @@ router.post("/admin", async (req, res) => {
         }))
     } catch (e) { console.log(e) }
 })
+
+router.post("/publishMoment", async (req, res) => {
+    try {
+        const { shopId, openId, title, imageList } = req.body;
+        if (!shopId || !openId || (!title && (!imageList || imageList.length === 0))) {
+            return res.json(fail(401, "参数错误，内容或图片不能为空"));
+        }
+
+        const data = {
+            shopId,
+            openId,
+            title,
+            imageList,
+            status: 1, // 默认正常状态
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        const result = await db.collection('album_demo').add(data);
+        return res.json(ok(result));
+    } catch (e) {
+        console.error("发布动态失败:", e);
+        return res.json(fail(500, "发布失败"));
+    }
+});
 
 export default router;
