@@ -123,7 +123,7 @@ router.post("/getOtherUserInfo", async (req, res) => {
             return res.json(fail(401, "参数错误"))
         }
         // 1) 查 online 记录
-        const onlineDoc = await db.collection('online_demo').doc(query.id).get()
+        const onlineDoc = await db.collection('online_demo').where({ _id: query.id }).get()
         if (!onlineDoc.data || onlineDoc.data.length === 0) {
             return res.json(fail(404, "未找到用户在线记录"))
         }

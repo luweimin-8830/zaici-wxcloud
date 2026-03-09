@@ -19,8 +19,12 @@ router.post("/saveDistance", async (req, res) => {
 
 router.get("/getDistance", async (req, res) => {
     try {
-        const distance = await db.collection("config").doc("9b5f7bed694e4f060123ee6e76416ebc").get()
-        res.json(ok(distance.data[0]))
+        const distance = await db.collection("config").where({ _id: "9b5f7bed694e4f060123ee6e76416ebc" }).get()
+        if (distance.data && distance.data.length > 0) {
+            res.json(ok(distance.data[0]))
+        } else {
+            res.json(fail(404, "未找到配置"))
+        }
     } catch (e) { console.log(e) }
 })
 

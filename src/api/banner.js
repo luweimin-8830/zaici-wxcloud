@@ -12,6 +12,22 @@ router.get("/", async (req, res) => {
     } catch (e) { console.log(e) }
 })
 
+router.get("/detail", async (req, res) => {
+    try {
+        const id = req.query.id;
+        if (!id) return res.json(fail(401, "缺少参数ID"));
+        const banner = await db.collection('banner_demo').where({ _id: id }).get();
+        if (banner.data && banner.data.length > 0) {
+            return res.json(ok(banner.data[0]));
+        } else {
+            return res.json(fail(404, "未找到该广告详情"));
+        }
+    } catch (e) {
+        console.log(e);
+        return res.json(fail(500, "服务器错误"));
+    }
+})
+
 router.post("/save", async (req, res) => {
     try {
         const query = req.body;

@@ -13,18 +13,10 @@ router.get("/detail", async (req, res) => {
         if (id) {
             let shopData = null;
             
-            // 方式1：doc().get()
-            const docRes = await db.collection('shop_list_demo').doc(id).get();
-            if (docRes.data) {
-                shopData = Array.isArray(docRes.data) ? docRes.data[0] : docRes.data;
-            }
-            
-            // 方式2：fallback to where().get()
-            if (!shopData) {
-                const whereRes = await db.collection('shop_list_demo').where({ _id: id }).get();
-                if (whereRes.data && whereRes.data.length > 0) {
-                    shopData = whereRes.data[0];
-                }
+            // 方式1：doc().get() -> 改为使用 where().get() 以避免 ID 不存在时抛出异常
+            const docRes = await db.collection('shop_list_demo').where({ _id: id }).get();
+            if (docRes.data && docRes.data.length > 0) {
+                shopData = docRes.data[0];
             }
 
             if (shopData) {
@@ -228,7 +220,7 @@ router.get("/moments", async (req, res) => {
             .skip(skip)
             .limit(Number(limit))
             .lookup({
-                from: 'users_demo', // 假设用户信息在 online_demo 中，或者其他用户表
+                from: 'users_demo', // 根据用户指正，表名为 users_demo
                 localField: 'openId',
                 foreignField: 'openId',
                 as: 'userInfo'
