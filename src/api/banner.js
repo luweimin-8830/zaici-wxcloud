@@ -33,11 +33,11 @@ router.post("/save", async (req, res) => {
         const query = req.body;
         const bannerData = query.banner;
         
-        // 确保 type 和 url 存入 detail 字段
-        if (!bannerData.detail) {
+        // 确保 type 和 url 存入 detail 字段，如果 detail 为空或类型不匹配则从根节点同步
+        if (!bannerData.detail || !bannerData.detail.type) {
             bannerData.detail = {
-                type: bannerData.type,
-                url: bannerData.url
+                type: bannerData.type || 'image',
+                url: bannerData.url || ''
             };
         }
 
