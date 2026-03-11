@@ -33,13 +33,10 @@ router.post("/save", async (req, res) => {
         const query = req.body;
         const bannerData = query.banner;
         
-        // 确保 type 和 url 存入 detail 字段，如果 detail 为空或类型不匹配则从根节点同步
-        if (!bannerData.detail || !bannerData.detail.type) {
-            bannerData.detail = {
-                type: bannerData.type || 'image',
-                url: bannerData.url || ''
-            };
-        }
+        // 确保 type 和 url 存入 detail 字段，采用增量赋值方式防止覆盖原有其他自定义字段
+        if (!bannerData.detail) bannerData.detail = {};
+        if (!bannerData.detail.type) bannerData.detail.type = bannerData.type || 'image';
+        if (!bannerData.detail.url) bannerData.detail.url = bannerData.url || '';
 
         if (bannerData._id) {
             let updateData = {...bannerData};
