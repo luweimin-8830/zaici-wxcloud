@@ -31,21 +31,30 @@ router.get("/detail", async (req, res) => {
 router.post("/save", async (req, res) => {
     try {
         const query = req.body;
-        const bannerDate = query.banner;
-        if (query.banner._id) {
-            let updateData = {...bannerDate};
+        const bannerData = query.banner;
+        
+        // 确保 type 和 url 存入 detail 字段
+        if (!bannerData.detail) {
+            bannerData.detail = {
+                type: bannerData.type,
+                url: bannerData.url
+            };
+        }
+
+        if (bannerData._id) {
+            let updateData = {...bannerData};
             delete updateData._id
             if (updateData.interval) {
                 updateData.interval = Number(updateData.interval);
             }
-            await db.collection('banner_demo').doc( bannerDate._id ).update({
+            await db.collection('banner_demo').doc( bannerData._id ).update({
                 ...updateData,
                 updatedAt: new Date()
             })
             return res.json(ok("更新成功"))
         } else {
             await db.collection("banner_demo").add({
-                ...query.banner,
+                ...bannerData,
                 createdAt: new Date(),
             })
             return res.json(ok("新增成功"))
