@@ -36,4 +36,20 @@ router.post("/update", async (req, res) => {
     }
 });
 
+router.post("/inc", async (req, res) => {
+    try {
+        const { id } = req.body;
+        if (!id) return res.json(fail(400, "缺少记录ID"));
+        
+        await db.collection('test_demo').doc(id).update({
+            cont: _.inc(1),
+            updatedAt: new Date()
+        });
+        res.json(ok("自增成功"));
+    } catch (e) {
+        console.error(e);
+        res.json(fail(500, "自增失败"));
+    }
+});
+
 export default router;
