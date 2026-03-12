@@ -513,4 +513,61 @@ router.post("/lottery/del", async (req, res) => {
     }
 });
 
+/**
+ * 获取报名全局配置
+ */
+router.get("/enrollment/config", async (req, res) => {
+    try {
+        const result = await db.collection('apply_config_demo').get();
+        if (result.data && result.data.length > 0) {
+            res.json(ok(result.data[0]));
+        } else {
+            // 返回默认配置
+            res.json(ok({
+                defaultOpen: true,
+                maxParticipants: '',
+                fieldOptions: [
+                    { label: '用户头像', value: 'avatar', enabled: true },
+                    { label: '中文姓名', value: 'nickname', enabled: true },
+                    { label: '联系手机号码', value: 'phone', enabled: true },
+                    { label: '公司', value: 'company', enabled: false },
+                    { label: '所属的部门', value: 'department', enabled: false },
+                    { label: '出发城市', value: 'departureCity', enabled: false },
+                    { label: '出发交通方式', value: 'departureTransport', enabled: false },
+                    { label: '回去交通方式', value: 'returnTransport', enabled: false }
+                ]
+            }));
+        }
+    } catch (e) {
+        console.error("获取报名配置失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
+/**
+ * 保存报名全局配置
+ */
+router.post("/enrollment/config/save", async (req, res) => {
+    try {
+        const { _id, config, fieldOptions } = req.body;
+        const data = {
+            ...config,
+            fieldOptions,
+            updatedAt: db.serverDate()
+        };
+
+        if (_id) {
+            await db.collection('apply_config_demo').doc(_id).update(data);
+            res.json(ok({ message: "配置更新成功" }));
+        } else {
+            data.createdAt = db.serverDate();
+            const result = await db.collection('apply_config_demo').add(data);
+            res.json(ok({ id: result.id, message: "配置创建成功" }));
+        }
+    } catch (e) {
+        console.error("保存报名配置失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
 export default router;
