@@ -570,4 +570,28 @@ router.post("/enrollment/config/save", async (req, res) => {
     }
 });
 
+/**
+ * 删除配置中的某个字段 (后端方法)
+ */
+router.post("/enrollment/config/field/delete", async (req, res) => {
+    try {
+        const { id, fieldValue } = req.body;
+        if (!id || !fieldValue) {
+            return res.json(fail(400, "参数缺失: id, fieldValue"));
+        }
+
+        await db.collection('apply_config_demo').doc(id).update({
+            fieldOptions: _.pull({
+                value: fieldValue
+            }),
+            updatedAt: db.serverDate()
+        });
+
+        res.json(ok({ message: "字段删除成功" }));
+    } catch (e) {
+        console.error("删除配置字段失败:", e);
+        res.json(fail(500, "服务器内部错误"));
+    }
+});
+
 export default router;
