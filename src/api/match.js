@@ -41,7 +41,7 @@ router.post("/get", async (req, res) => {
             let likeObj = {
                 count: likeCount.data.length,
                 avatar: likeCount.data.length == 0 ? 'https://cloudbase-3gn2elwa3387b385-1364843451.tcloudbaseapp.com/user-search-fill.png?sign=fd684b2ec65ae33bd702f70edc25997f&t=1757054747' : avatar,
-                name: '喜欢我的人',
+                name: '好友申请',
                 content: 1,
                 contentTime: new Date().getTime(),
             }
