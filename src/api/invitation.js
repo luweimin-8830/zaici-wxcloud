@@ -138,7 +138,7 @@ router.post("/update", async (req, res) => {
 
 router.post("/join", async (req, res) => {
     try {
-        const { invitationId, nickname, avatar, company, department } = req.body;
+        const { invitationId, ...restBody } = req.body;
         const OPENID = req.headers["x-wx-openid"];
 
         if (!invitationId) {
@@ -168,12 +168,13 @@ router.post("/join", async (req, res) => {
 
         // 3. 写入报名表
         const data = {
+            ...restBody, // 包含所有动态字段，例如 phone, departureCity 等
             invitationId,
             openId: OPENID,
-            nickname: nickname || "匿名用户",
-            avatar: avatar || "",
-            company: company || "",
-            department: department || "",
+            nickname: restBody.nickname || "匿名用户",
+            avatar: restBody.avatar || "",
+            company: restBody.company || "",
+            department: restBody.department || "",
             createdAt: db.serverDate(),
             updatedAt: db.serverDate()
         };
@@ -182,20 +183,19 @@ router.post("/join", async (req, res) => {
 
         // 4. 同步更新用户主表 (与 userInfo.js 字段对齐)
         const userUpdateData = {
+            ...restBody, // 将所有信息同步更新到主表
             updatedAt: db.serverDate()
         };
-        if (nickname) userUpdateData.name = nickname; // userInfo.js 中使用 name
-        if (avatar) userUpdateData.avatar = avatar;
-        if (company) userUpdateData.company = company;
-        if (department) userUpdateData.department = department;
-
+        if (restBody.nickname) userUpdateData.name = restBody.nickname; // userInfo.js 中使用 name
+        delete userUpdateData.nickname; // 避免在 user 表冗余 nickname 字段
+        
         await db.collection('users_demo').where({ openId: OPENID }).update(userUpdateData);
 
         // 5. 如果修改了昵称或头像，同步更新在线表 (对齐 userInfo.js 逻辑)
-        if (nickname || avatar) {
+        if (restBody.nickname || restBody.avatar) {
             const onlineUpdate = {};
-            if (nickname) onlineUpdate.name = nickname;
-            if (avatar) onlineUpdate.avatar = avatar;
+            if (restBody.nickname) onlineUpdate.name = restBody.nickname;
+            if (restBody.avatar) onlineUpdate.avatar = restBody.avatar;
             await db.collection('online_demo').where({ openId: OPENID }).update(onlineUpdate);
         }
 
@@ -527,14 +527,14 @@ router.get("/enrollment/config", async (req, res) => {
                 defaultOpen: true,
                 maxParticipants: '',
                 fieldOptions: [
-                    { label: '用户头像', value: 'avatar', enabled: true },
-                    { label: '中文姓名', value: 'nickname', enabled: true },
-                    { label: '联系手机号码', value: 'phone', enabled: true },
-                    { label: '公司', value: 'company', enabled: false },
-                    { label: '所属的部门', value: 'department', enabled: false },
-                    { label: '出发城市', value: 'departureCity', enabled: false },
-                    { label: '出发交通方式', value: 'departureTransport', enabled: false },
-                    { label: '回去交通方式', value: 'returnTransport', enabled: false }
+                    { label: '用户头像', value: 'avatar', type: 'image', enabled: true },
+                    { label: '中文姓名', value: 'nickname', type: 'text', enabled: true },
+                    { label: '联系手机号码', value: 'phone', type: 'text', enabled: true },
+                    { label: '公司', value: 'company', type: 'text', enabled: false },
+                    { label: '所属的部门', value: 'department', type: 'text', enabled: false },
+                    { label: '出发城市', value: 'departureCity', type: 'text', enabled: false },
+                    { label: '出发交通方式', value: 'departureTransport', type: 'text', enabled: false },
+                    { label: '回去交通方式', value: 'returnTransport', type: 'text', enabled: false }
                 ]
             }));
         }
