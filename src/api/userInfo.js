@@ -10,12 +10,17 @@ router.post("/", async (req, res, next) => {
     try {
         const OPENID = req.headers["x-wx-openid"];
         if (!OPENID) { return res.json(fail(401, "未获取到openId,请确认")) }
+        
+        const body = req.body || {};
+        const { nickname, ...restBody } = body;
+
         const userQuery = await db.collection('users_demo').where({ openId: OPENID }).get()
-        const userName = "用户" + OPENID.slice(-4)
+        const userName = nickname || ("用户" + OPENID.slice(-4))
         let userObj = {}
         if (userQuery.data.length === 0) {
             //新用户
             const newUser = {
+                ...restBody,
                 openId: OPENID,
                 superLike: 0,
                 beLike: 0,
@@ -24,7 +29,7 @@ router.post("/", async (req, res, next) => {
                 created: db.serverDate(),
                 lastLogin: db.serverDate(),
                 name: userName,
-                avatar: "https://cloud1-1gth9cum37c9015c-1380861431.tcloudbaseapp.com/logo.png?sign=44d3bfbeb3cb05b7ff6fce3460a8bcdf&t=1765181560"
+                avatar: body.avatar || "https://cloud1-1gth9cum37c9015c-1380861431.tcloudbaseapp.com/logo.png?sign=44d3bfbeb3cb05b7ff6fce3460a8bcdf&t=1765181560"
             }
             const addRes = await db.collection('users_demo').add(newUser)
             userObj = { ...newUser, _id: addRes.id }
@@ -32,8 +37,22 @@ router.post("/", async (req, res, next) => {
             //老用户
             const existingUser = userQuery.data[0];
             const docId = existingUser._id;
-            await db.collection('users_demo').doc(docId).update({ lastLogin: new Date() });
-            userObj = { ...existingUser, lastLogin: new Date() };
+            
+            const updateData = {
+                ...restBody,
+                lastLogin: db.serverDate()
+            };
+            if (nickname) updateData.name = nickname;
+            if (body.avatar) updateData.avatar = body.avatar;
+            // 避免覆盖掉不需要的字段
+            Object.keys(updateData).forEach(key => {
+                if (updateData[key] === undefined) {
+                    delete updateData[key];
+                }
+            });
+
+            await db.collection('users_demo').doc(docId).update(updateData);
+            userObj = { ...existingUser, ...updateData };
         }
 
         res.json(ok(userObj))
