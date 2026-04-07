@@ -21,7 +21,7 @@ func Init() error {
 	addr := os.Getenv("MYSQL_ADDRESS")
 	dataBase := os.Getenv("MYSQL_DATABASE")
 	if dataBase == "" {
-		dataBase = "golang_demo"
+		dataBase = "zaici"
 	}
 	source = fmt.Sprintf(source, user, pwd, addr, dataBase)
 	fmt.Println("start init mysql with ", source)
