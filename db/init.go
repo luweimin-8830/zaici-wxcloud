@@ -8,6 +8,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"wxcloudrun-golang/db/model"
 )
 
 var dbInstance *gorm.DB
@@ -32,6 +33,18 @@ func Init() error {
 		}})
 	if err != nil {
 		fmt.Println("DB Open error,err=", err.Error())
+		return err
+	}
+
+	// 自动迁移模型表结构
+	err = db.AutoMigrate(
+		&model.User{},
+		&model.Admin{},
+		&model.Banner{},
+		&model.Config{},
+	)
+	if err != nil {
+		fmt.Println("AutoMigrate error,err=", err.Error())
 		return err
 	}
 

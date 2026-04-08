@@ -25,6 +25,10 @@ func main() {
 	bannerService := service.NewBannerService()
 	bannerHandler := handler.NewBannerHandler(bannerService)
 
+	// 初始化配置服务和处理器
+	configService := service.NewConfigService()
+	configHandler := handler.NewConfigHandler(configService)
+
 	// 用户相关接口 /api/user/*
 	userGroup := r.Group("/api/user")
 	{
@@ -42,6 +46,13 @@ func main() {
 		bannerGroup.GET("/detail", bannerHandler.GetBannerDetail)
 		bannerGroup.POST("/save", bannerHandler.SaveBanner)
 		bannerGroup.POST("/del", bannerHandler.DeleteBanner)
+	}
+
+	// 配置相关接口 /api/config/*
+	configGroup := r.Group("/api/config")
+	{
+		configGroup.GET("/getDistance", configHandler.GetDistance)
+		configGroup.POST("/saveDistance", configHandler.SaveDistance)
 	}
 
 	log.Fatal(r.Run(":80"))
