@@ -42,6 +42,15 @@ func Init() error {
 		&model.Admin{},
 		&model.Banner{},
 		&model.Config{},
+		&model.OnlineRecord{},
+		&model.Shop{},
+		&model.Match{},
+		&model.Invitation{},
+		&model.Inviter{},
+		&model.Lottery{},
+		&model.ApplyConfig{},
+		&model.DetailRecord{},
+		&model.PictureList{},
 	)
 	if err != nil {
 		fmt.Println("AutoMigrate error,err=", err.Error())

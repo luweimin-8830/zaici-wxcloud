@@ -29,6 +29,25 @@ func main() {
 	configService := service.NewConfigService()
 	configHandler := handler.NewConfigHandler(configService)
 
+	// 初始化聊天服务和处理器
+	chatService := service.NewChatService()
+	chatHandler := handler.NewChatHandler(chatService)
+
+	// 初始化详情记录服务和处理器
+	detailService := service.NewDetailService()
+	detailHandler := handler.NewDetailHandler(detailService, userService)
+
+	// 初始化匹配服务和处理器
+	matchService := service.NewMatchService()
+	matchHandler := handler.NewMatchHandler(matchService)
+
+	// 初始化在线服务和处理器
+	onlineService := service.NewOnlineService()
+	onlineHandler := handler.NewOnlineHandler(onlineService)
+
+	// 初始化门店服务和处理器
+	shopHandler := handler.NewShopHandler()
+
 	// 用户相关接口 /api/user/*
 	userGroup := r.Group("/api/user")
 	{
@@ -53,6 +72,60 @@ func main() {
 	{
 		configGroup.GET("/getDistance", configHandler.GetDistance)
 		configGroup.POST("/saveDistance", configHandler.SaveDistance)
+	}
+
+	// 聊天相关接口 /api/chat/*
+	chatGroup := r.Group("/api/chat")
+	{
+		chatGroup.POST("/get", chatHandler.GetMessages)
+		chatGroup.POST("/send", chatHandler.SendMessage)
+		chatGroup.POST("/update", chatHandler.UpdateState)
+		chatGroup.POST("/updateState", chatHandler.UpdateStateByID)
+		chatGroup.POST("/saveBlock", chatHandler.SaveBlock)
+		chatGroup.POST("/delInfo", chatHandler.DeleteInfo)
+		chatGroup.POST("/check", chatHandler.CheckContent)
+	}
+
+	// 详情记录相关接口 /api/detailRecord/*
+	detailGroup := r.Group("/api/detailRecord")
+	{
+		detailGroup.POST("/get", detailHandler.GetDetail)
+		detailGroup.POST("/save", detailHandler.SaveDetail)
+		detailGroup.POST("/saveSeat", detailHandler.SaveSeat)
+		detailGroup.POST("/getHash", detailHandler.GetHash)
+	}
+
+	// 匹配相关接口 /api/match/*
+	matchGroup := r.Group("/api/match")
+	{
+		matchGroup.POST("/get", matchHandler.GetMatches)
+		matchGroup.POST("/add", matchHandler.AddMatch)
+		matchGroup.POST("/del", matchHandler.DeleteMatch)
+		matchGroup.POST("/getLikeMatch", matchHandler.GetLikeMatch)
+		matchGroup.POST("/sendMessage", matchHandler.SendMessage)
+	}
+
+// ... existing code ...
+	// 在线相关接口 /api/online/*
+	onlineGroup := r.Group("/api/online")
+	{
+		onlineGroup.GET("/status", onlineHandler.GetStatus)
+		onlineGroup.POST("/near", onlineHandler.GetNear)
+		onlineGroup.POST("/save", onlineHandler.SaveOnline)
+		onlineGroup.POST("/update", onlineHandler.UpdateOnline)
+		onlineGroup.GET("/history", onlineHandler.GetHistory)
+	}
+// ... existing code ...
+
+	// 门店相关接口 /api/shop/*
+	shopGroup := r.Group("/api/shop")
+	{
+		shopGroup.GET("/detail", shopHandler.GetDetail)
+		shopGroup.POST("/", shopHandler.GetNearList)
+		shopGroup.POST("/save", shopHandler.Save)
+		shopGroup.POST("/update", shopHandler.Update)
+		shopGroup.POST("/del", shopHandler.Delete)
+		shopGroup.POST("/admin", shopHandler.Admin)
 	}
 
 	log.Fatal(r.Run(":80"))

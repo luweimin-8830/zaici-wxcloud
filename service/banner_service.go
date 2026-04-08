@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+// CommonGetString 提取 map 中的字符串，供多个 Service 共用
+func CommonGetString(m map[string]interface{}, key string) string {
+	if v, ok := m[key].(string); ok {
+		return v
+	}
+	return ""
+}
+
 type BannerService struct {
 	bannerDao *dao.BannerDao
 }
@@ -53,11 +61,11 @@ func (s *BannerService) SaveBanner(bannerData map[string]interface{}) (string, e
 
 	// 构造 Banner 模型
 	banner := &model.Banner{
-		Title:    getString(bannerData, "title"),
-		ImageUrl: getString(bannerData, "imageUrl"),
-		LinkUrl:  getString(bannerData, "linkUrl"),
-		Type:     getString(bannerData, "type"),
-		Url:      getString(bannerData, "url"),
+		Title:    CommonGetString(bannerData, "title"),
+		ImageUrl: CommonGetString(bannerData, "imageUrl"),
+		LinkUrl:  CommonGetString(bannerData, "linkUrl"),
+		Type:     CommonGetString(bannerData, "type"),
+		Url:      CommonGetString(bannerData, "url"),
 		Detail:   string(detailJson),
 		UpdatedAt: time.Now(),
 	}
@@ -87,11 +95,4 @@ func (s *BannerService) SaveBanner(bannerData map[string]interface{}) (string, e
 
 func (s *BannerService) DeleteBanner(id uint) error {
 	return s.bannerDao.Delete(id)
-}
-
-func getString(m map[string]interface{}, key string) string {
-	if v, ok := m[key].(string); ok {
-		return v
-	}
-	return ""
 }
