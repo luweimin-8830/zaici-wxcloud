@@ -34,11 +34,4 @@ func (d *DetailDao) UpdateSeat(openId string, seat string) error {
 		Update("seat", seat).Error
 }
 
-func (d *DetailDao) GetPictureByHash(picHash string) (*model.PictureList, error) {
-	var pic model.PictureList
-	err := db.Get().Where("pic_hash = ?", picHash).First(&pic).Error
-	if err != nil {
-		return nil, err
-	}
-	return &pic, nil
-}
+

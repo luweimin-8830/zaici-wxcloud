@@ -96,26 +96,3 @@ func (h *DetailHandler) SaveSeat(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 0, "data": "更新成功"})
 }
-
-func (h *DetailHandler) GetHash(c *gin.Context) {
-	var query struct {
-		PicHash string `json:"picHash"`
-	}
-	if err := c.ShouldBindJSON(&query); err != nil || query.PicHash == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 401, "message": "参数错误"})
-		return
-	}
-
-	pic, err := h.detailService.GetPictureHash(query.PicHash)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 0, "data": "无相应图片"})
-		return
-	}
-
-	if pic.SecCheckStatus == 0 {
-		c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "图片存在违规行为,禁止发布"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 0, "data": pic.UserPicURL})
-}

@@ -84,7 +84,3 @@ func (s *DetailService) SaveDetail(openId string, data map[string]interface{}) (
 func (s *DetailService) SaveSeat(openId string, seat string) error {
 	return s.detailDao.UpdateSeat(openId, seat)
 }
-
-func (s *DetailService) GetPictureHash(picHash string) (*model.PictureList, error) {
-	return s.detailDao.GetPictureByHash(picHash)
-}

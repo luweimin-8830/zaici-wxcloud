@@ -89,13 +89,18 @@ func main() {
 		chatGroup.POST("/check", chatHandler.CheckContent)
 	}
 
+	// 微信内容安全回调
+	r.POST("/censor", chatHandler.Censor)
+
+	// GoEasy Webhook 回调
+	r.POST("/webhook", chatHandler.Webhook)
+
 	// 详情记录相关接口 /api/detailRecord/*
 	detailGroup := r.Group("/api/detailRecord")
 	{
 		detailGroup.POST("/get", detailHandler.GetDetail)
 		detailGroup.POST("/save", detailHandler.SaveDetail)
 		detailGroup.POST("/saveSeat", detailHandler.SaveSeat)
-		detailGroup.POST("/getHash", detailHandler.GetHash)
 	}
 
 	// 匹配相关接口 /api/match/*
@@ -141,6 +146,8 @@ func main() {
 		mediaGroup.POST("/delete/:id", mediaHandler.DeletePicture)
 		mediaGroup.POST("/checkStatus/:id", mediaHandler.UpdatePictureSecCheckStatus)
 		mediaGroup.GET("/getByHash", mediaHandler.GetPictureByHash)
+		mediaGroup.POST("/getHash", mediaHandler.GetHash)       // 兼容旧接口
+		mediaGroup.POST("/startCensor", mediaHandler.StartCensor) // 从 index.js 迁移
 	}
 
 	log.Fatal(r.Run(":80"))

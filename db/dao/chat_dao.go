@@ -51,3 +51,10 @@ func (d *ChatDao) SaveBlock(openId string, blockId string) error {
 func (d *ChatDao) DeleteInfoMonitor(openId string) error {
 	return db.Get().Where("open_id = ?", openId).Delete(&model.InfoMonitor{}).Error
 }
+
+func (d *ChatDao) CreateInfoMonitor(openId, source string) error {
+	return db.Get().Create(&model.InfoMonitor{
+		OpenID: openId,
+		Source: source,
+	}).Error
+}

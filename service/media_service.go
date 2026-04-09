@@ -19,11 +19,16 @@ func NewMediaService() *MediaService {
 
 // CreatePicture 创建图片记录
 func (s *MediaService) CreatePicture(userPicURL, picHash, traceID string) (*model.PictureList, error) {
+	return s.CreatePictureWithStatus(userPicURL, picHash, traceID, 0)
+}
+
+// CreatePictureWithStatus 创建图片记录并指定审核状态
+func (s *MediaService) CreatePictureWithStatus(userPicURL, picHash, traceID string, status int) (*model.PictureList, error) {
 	picture := &model.PictureList{
 		UserPicURL:     userPicURL,
 		PicHash:        picHash,
 		TraceID:        traceID,
-		SecCheckStatus: 0, // 0: 待审核
+		SecCheckStatus: status,
 	}
 	err := s.pictureDao.Create(picture)
 	if err != nil {
