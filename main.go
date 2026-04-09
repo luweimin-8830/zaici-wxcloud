@@ -48,6 +48,9 @@ func main() {
 	// 初始化门店服务和处理器
 	shopHandler := handler.NewShopHandler()
 
+	// 初始化媒体服务和处理器
+	mediaHandler := handler.NewMediaHandler()
+
 	// 用户相关接口 /api/user/*
 	userGroup := r.Group("/api/user")
 	{
@@ -126,6 +129,18 @@ func main() {
 		shopGroup.POST("/update", shopHandler.Update)
 		shopGroup.POST("/del", shopHandler.Delete)
 		shopGroup.POST("/admin", shopHandler.Admin)
+	}
+
+	// 媒体相关接口 /api/media/*
+	mediaGroup := r.Group("/api/media")
+	{
+		mediaGroup.GET("/list", mediaHandler.ListPictures)
+		mediaGroup.POST("/create", mediaHandler.CreatePicture)
+		mediaGroup.GET("/get/:id", mediaHandler.GetPictureByID)
+		mediaGroup.POST("/update/:id", mediaHandler.UpdatePicture)
+		mediaGroup.POST("/delete/:id", mediaHandler.DeletePicture)
+		mediaGroup.POST("/checkStatus/:id", mediaHandler.UpdatePictureSecCheckStatus)
+		mediaGroup.GET("/getByHash", mediaHandler.GetPictureByHash)
 	}
 
 	log.Fatal(r.Run(":80"))
