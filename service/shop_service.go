@@ -130,6 +130,10 @@ func (s *ShopService) GetNearList(longitude, latitude, distance float64) ([]map[
 	fmt.Printf("GetNearList - shops count: %d, total: %d\n", len(shops), total)
 	_ = total
 
+	// 获取在线人数（这里简化处理，实际应该查询 online 表）
+	onlineDao := dao.NewOnlineDao()
+	now := time.Now().Unix()
+
 	// 构建返回结果，计算距离并过滤
 	result := make([]map[string]interface{}, 0, len(shops))
 	for _, shop := range shops {
@@ -141,17 +145,23 @@ func (s *ShopService) GetNearList(longitude, latitude, distance float64) ([]map[
 		
 		// 只返回在指定距离范围内的门店
 		if dist <= distance/1000 { // distance 参数是米，转换为公里比较
+			// 查询该门店的在线人数
+			shopIdStr := fmt.Sprintf("%d", shop.ID)
+			onlineUsers, _ := onlineDao.GetShopOnlineUsers(shopIdStr, now, "")
+			onlineCount := len(onlineUsers)
+			
 			shopMap := map[string]interface{}{
-				"id":        shop.ID,
-				"shopName":  shop.ShopName,
-				"address":   shop.Address,
-				"phone":     shop.Phone,
-				"image":     shop.Image,
-				"tag1":      shop.Tag1,
-				"tag2":      shop.Tag2,
-				"startTime": shop.StartTime,
-				"endTime":   shop.EndTime,
-				"distance":  dist, // 距离（公里）
+				"id":           shop.ID,
+				"shopName":     shop.ShopName,
+				"address":      shop.Address,
+				"phone":        shop.Phone,
+				"image":        shop.Image,
+				"tag1":         shop.Tag1,
+				"tag2":         shop.Tag2,
+				"startTime":    shop.StartTime,
+				"endTime":      shop.EndTime,
+				"distance":     dist, // 距离（公里）
+				"onlineCount":  onlineCount,
 			}
 			result = append(result, shopMap)
 		}
