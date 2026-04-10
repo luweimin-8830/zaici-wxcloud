@@ -71,7 +71,8 @@ func (h *ShopHandler) Update(c *gin.Context) {
 		return
 	}
 
-	idStr := utils.GetString(shopList, "_id")
+	// 从 data["id"] 获取 ID，避免在 shopList 中传递 _id
+	idStr := utils.GetString(data, "id")
 	if idStr == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
 		return
