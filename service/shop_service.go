@@ -78,7 +78,7 @@ func (s *ShopService) AdminList(page, limit int, keyword string) ([]model.Shop, 
 	return shops, total, err
 }
 
-func (s *ShopService) GetNearList(longitude, latitude, distance float64) ([]model.Shop, error) {
+func (s *ShopService) GetNearList(longitude, latitude, distance float64) ([]map[string]interface{}, error) {
 	// MySQL 简化实现：实际应使用 ST_Distance_Sphere
 	// 这里暂且返回所有或简单过滤，建议后续优化为空间查询
 	var shops []model.Shop
@@ -87,5 +87,24 @@ func (s *ShopService) GetNearList(longitude, latitude, distance float64) ([]mode
 	if err != nil {
 		return nil, err
 	}
-	return shops, nil
+
+	// 构建返回结果，添加距离字段
+	result := make([]map[string]interface{}, 0, len(shops))
+	for _, shop := range shops {
+		shopMap := map[string]interface{}{
+			"id":        shop.ID,
+			"shopName":  shop.ShopName,
+			"address":   shop.Address,
+			"phone":     shop.Phone,
+			"image":     shop.Image,
+			"tag1":      shop.Tag1,
+			"tag2":      shop.Tag2,
+			"startTime": shop.StartTime,
+			"endTime":   shop.EndTime,
+			"distance":  0, // 简化处理，实际应根据经纬度计算
+		}
+		result = append(result, shopMap)
+	}
+	_ = total // 避免未使用变量警告
+	return result, nil
 }
