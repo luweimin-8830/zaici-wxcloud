@@ -182,9 +182,12 @@ func (h *ShopHandler) Admin(c *gin.Context) {
 func (h *ShopHandler) GetNearList(c *gin.Context) {
 	var data map[string]interface{}
 	if err := c.ShouldBindJSON(&data); err != nil {
+		fmt.Printf("GetNearList - bind error: %v\n", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
 		return
 	}
+
+	fmt.Printf("GetNearList - received data: %+v\n", data)
 
 	longitude := 0.0
 	latitude := 0.0
@@ -200,11 +203,15 @@ func (h *ShopHandler) GetNearList(c *gin.Context) {
 		distance = dists
 	}
 
+	fmt.Printf("GetNearList - params: longitude=%f, latitude=%f, distance=%f\n", longitude, latitude, distance)
+
 	shops, err := h.shopService.GetNearList(longitude, latitude, distance)
 	if err != nil {
+		fmt.Printf("GetNearList - service error: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取附近门店失败"})
 		return
 	}
 
+	fmt.Printf("GetNearList - returning %d shops\n", len(shops))
 	c.JSON(http.StatusOK, shops)
 }

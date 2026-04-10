@@ -87,8 +87,10 @@ func (s *ShopService) GetNearList(longitude, latitude, distance float64) ([]map[
 	var total int64
 	shops, total, err := s.shopDao.List(nil, 0, 1000)
 	if err != nil {
+		fmt.Printf("GetNearList - shopDao.List error: %v\n", err)
 		return nil, err
 	}
+	fmt.Printf("GetNearList - shops count: %d, total: %d\n", len(shops), total)
 	_ = total
 
 	// 构建返回结果，计算距离并过滤
