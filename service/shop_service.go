@@ -82,10 +82,10 @@ func (s *ShopService) AdminList(page, limit int, keyword string) ([]model.Shop, 
 }
 
 func (s *ShopService) GetNearList(longitude, latitude, distance float64) ([]map[string]interface{}, error) {
-	// 获取所有门店
+	// 获取所有门店（使用较大的 limit 值来获取所有门店）
 	var shops []model.Shop
 	var total int64
-	shops, total, err := s.shopDao.List(nil, 0, int(total))
+	shops, total, err := s.shopDao.List(nil, 0, 1000)
 	if err != nil {
 		return nil, err
 	}
