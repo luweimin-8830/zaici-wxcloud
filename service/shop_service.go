@@ -1,7 +1,10 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
+	"math"
+	"sort"
 	"time"
 	"wxcloudrun-golang/db/dao"
 	"wxcloudrun-golang/db/model"
@@ -79,32 +82,84 @@ func (s *ShopService) AdminList(page, limit int, keyword string) ([]model.Shop, 
 }
 
 func (s *ShopService) GetNearList(longitude, latitude, distance float64) ([]map[string]interface{}, error) {
-	// MySQL 简化实现：实际应使用 ST_Distance_Sphere
-	// 这里暂且返回所有或简单过滤，建议后续优化为空间查询
+	// 获取所有门店
 	var shops []model.Shop
 	var total int64
 	shops, total, err := s.shopDao.List(nil, 0, int(total))
 	if err != nil {
 		return nil, err
 	}
+	_ = total
 
-	// 构建返回结果，添加距离字段
+	// 构建返回结果，计算距离并过滤
 	result := make([]map[string]interface{}, 0, len(shops))
 	for _, shop := range shops {
-		shopMap := map[string]interface{}{
-			"id":        shop.ID,
-			"shopName":  shop.ShopName,
-			"address":   shop.Address,
-			"phone":     shop.Phone,
-			"image":     shop.Image,
-			"tag1":      shop.Tag1,
-			"tag2":      shop.Tag2,
-			"startTime": shop.StartTime,
-			"endTime":   shop.EndTime,
-			"distance":  0, // 简化处理，实际应根据经纬度计算
+		// 解析 location 字段（GeoJSON 格式）
+		shopLongitude, shopLatitude := parseLocation(shop.Location)
+		
+		// 计算距离（单位：公里）
+		dist := haversineDistance(longitude, latitude, shopLongitude, shopLatitude)
+		
+		// 只返回在指定距离范围内的门店
+		if dist <= distance/1000 { // distance 参数是米，转换为公里比较
+			shopMap := map[string]interface{}{
+				"id":        shop.ID,
+				"shopName":  shop.ShopName,
+				"address":   shop.Address,
+				"phone":     shop.Phone,
+				"image":     shop.Image,
+				"tag1":      shop.Tag1,
+				"tag2":      shop.Tag2,
+				"startTime": shop.StartTime,
+				"endTime":   shop.EndTime,
+				"distance":  dist, // 距离（公里）
+			}
+			result = append(result, shopMap)
 		}
-		result = append(result, shopMap)
 	}
-	_ = total // 避免未使用变量警告
+	
+	// 按距离排序
+	sort.Slice(result, func(i, j int) bool {
+		return result[i]["distance"].(float64) < result[j]["distance"].(float64)
+	})
+	
 	return result, nil
+}
+
+// parseLocation 解析 GeoJSON 格式的 location 字符串
+func parseLocation(location string) (longitude, latitude float64) {
+	if location == "" {
+		return 0, 0
+	}
+	
+	// 尝试解析 {"type":"Point","coordinates":[longitude,latitude]}
+	var geo struct {
+		Type        string    `json:"type"`
+		Coordinates []float64 `json:"coordinates"`
+	}
+	
+	if err := json.Unmarshal([]byte(location), &geo); err == nil && len(geo.Coordinates) >= 2 {
+		return geo.Coordinates[0], geo.Coordinates[1] // longitude, latitude
+	}
+	
+	return 0, 0
+}
+
+// haversineDistance 计算两点之间的球面距离（单位：公里）
+func haversineDistance(lon1, lat1, lon2, lat2 float64) float64 {
+	const R = 6371 // 地球半径（公里）
+	
+	// 转换为弧度
+	lat1Rad := lat1 * math.Pi / 180
+	lat2Rad := lat2 * math.Pi / 180
+	deltaLat := (lat2 - lat1) * math.Pi / 180
+	deltaLon := (lon2 - lon1) * math.Pi / 180
+	
+	// Haversine 公式
+	a := math.Sin(deltaLat/2)*math.Sin(deltaLat/2) +
+		math.Cos(lat1Rad)*math.Cos(lat2Rad)*
+			math.Sin(deltaLon/2)*math.Sin(deltaLon/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	
+	return R * c
 }
