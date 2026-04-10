@@ -118,10 +118,10 @@ func main() {
 	onlineGroup := r.Group("/api/online")
 	{
 		onlineGroup.GET("/status", onlineHandler.GetStatus)
-		onlineGroup.POST("/near", onlineHandler.GetNear)
 		onlineGroup.POST("/save", onlineHandler.SaveOnline)
 		onlineGroup.POST("/update", onlineHandler.UpdateOnline)
 		onlineGroup.GET("/history", onlineHandler.GetHistory)
+		onlineGroup.POST("/shop", onlineHandler.GetShop)
 	}
 // ... existing code ...
 

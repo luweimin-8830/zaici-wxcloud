@@ -115,3 +115,21 @@ func (h *OnlineHandler) GetHistory(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 0, "data": list})
 }
+
+func (h *OnlineHandler) GetShop(c *gin.Context) {
+	var query struct {
+		OpenId string `json:"openId"`
+		ShopId string `json:"shopId"`
+	}
+	if err := c.ShouldBindJSON(&query); err != nil || query.OpenId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 401, "message": "参数错误"})
+		return
+	}
+
+	list, err := h.onlineService.GetShopOnline(query.ShopId, query.OpenId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "data": gin.H{"data": list}})
+}
