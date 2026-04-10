@@ -126,10 +126,15 @@ func (h *OnlineHandler) GetShop(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("GetShop - received: openId=%s, shopId=%s\n", query.OpenId, query.ShopId)
+
 	list, err := h.onlineService.GetShopOnline(query.ShopId, query.OpenId)
 	if err != nil {
+		fmt.Printf("GetShop - GetShopOnline error: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
 		return
 	}
+
+	fmt.Printf("GetShop - returning list count: %d\n", len(list))
 	c.JSON(http.StatusOK, gin.H{"code": 0, "data": gin.H{"data": list}})
 }

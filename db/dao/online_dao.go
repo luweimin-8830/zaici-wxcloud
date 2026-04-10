@@ -27,6 +27,7 @@ func (d *OnlineDao) GetShopOnlineUsers(shopId string, now int64, excludeOpenId s
 		query = query.Where("open_id != ?", excludeOpenId)
 	}
 	err := query.Find(&list).Error
+	fmt.Printf("GetShopOnlineUsers - shopId: %s, now: %d, count: %d, err: %v\n", shopId, now, len(list), err)
 	return list, err
 }
 

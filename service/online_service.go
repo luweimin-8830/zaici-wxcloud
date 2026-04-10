@@ -163,11 +163,16 @@ func (s *OnlineService) GetHistory(shopId string, openId string) ([]model.Online
 func (s *OnlineService) GetShopOnline(shopId string, openId string) ([]map[string]interface{}, error) {
 	now := time.Now().UnixMilli()
 
+	fmt.Printf("GetShopOnline - shopId: %s, openId: %s, now: %d\n", shopId, openId, now)
+
 	// 获取门店在线用户
 	records, err := s.onlineDao.GetShopOnlineUsers(shopId, now, openId)
 	if err != nil {
+		fmt.Printf("GetShopOnline - GetShopOnlineUsers error: %v\n", err)
 		return nil, err
 	}
+
+	fmt.Printf("GetShopOnline - records count: %d\n", len(records))
 
 	var userList []map[string]interface{}
 	for _, rec := range records {
