@@ -55,7 +55,12 @@ func (dao *ShopDao) Search(keyword string, skip, limit int) ([]model.Shop, int64
 	var shops []model.Shop
 	var total int64
 
-	dbQuery := db.Get().Model(&model.Shop{}).Where("shopname LIKE ?", "%"+keyword+"%")
+	dbQuery := db.Get().Model(&model.Shop{})
+	
+	// 如果 keyword 不为空，添加模糊查询条件
+	if keyword != "" {
+		dbQuery = dbQuery.Where("shopname LIKE ?", "%"+keyword+"%")
+	}
 
 	if err := dbQuery.Count(&total).Error; err != nil {
 		return nil, 0, err
