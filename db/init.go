@@ -51,6 +51,9 @@ func Init() error {
 		&model.ApplyConfig{},
 		&model.DetailRecord{},
 		&model.PictureList{},
+		&model.ChatHistory{},
+		&model.BlockList{},
+		&model.InfoMonitor{},
 	)
 	if err != nil {
 		fmt.Println("AutoMigrate error,err=", err.Error())
