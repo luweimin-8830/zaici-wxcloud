@@ -22,6 +22,7 @@ func NewShopHandler() *ShopHandler {
 
 func (h *ShopHandler) GetDetail(c *gin.Context) {
 	id := c.Query("id")
+	fmt.Printf("GetDetail - received id: %s\n", id)
 	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
 		return
@@ -29,10 +30,12 @@ func (h *ShopHandler) GetDetail(c *gin.Context) {
 
 	shop, err := h.shopService.GetDetail(id)
 	if err != nil {
+		fmt.Printf("GetDetail - error: %v\n", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": "未找到该门店"})
 		return
 	}
 
+	fmt.Printf("GetDetail - found shop: id=%d, name=%s\n", shop.ID, shop.ShopName)
 	c.JSON(http.StatusOK, shop)
 }
 

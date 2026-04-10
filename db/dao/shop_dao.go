@@ -13,7 +13,7 @@ func NewShopDao() *ShopDao {
 
 func (dao *ShopDao) GetByID(id string) (*model.Shop, error) {
 	var shop model.Shop
-	if err := db.Get().First(&shop, "id = ?", id).Error; err != nil {
+	if err := db.Get().Where("id = ?", id).First(&shop).Error; err != nil {
 		return nil, err
 	}
 	return &shop, nil

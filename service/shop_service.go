@@ -26,10 +26,25 @@ func (s *ShopService) GetDetail(id string) (*model.Shop, error) {
 }
 
 func (s *ShopService) Save(data map[string]interface{}) (*model.Shop, error) {
-	// 兼容前端字段名：shopName 或 shopname
+	// 兼容前端字段名：shopName、shopname 或 shop_name
 	shopName := utils.GetString(data, "shopName")
 	if shopName == "" {
 		shopName = utils.GetString(data, "shopname")
+	}
+	if shopName == "" {
+		shopName = utils.GetString(data, "shop_name")
+	}
+	
+	// 兼容前端字段名：startTime 或 start_time
+	startTime := utils.GetString(data, "startTime")
+	if startTime == "" {
+		startTime = utils.GetString(data, "start_time")
+	}
+	
+	// 兼容前端字段名：endTime 或 end_time
+	endTime := utils.GetString(data, "endTime")
+	if endTime == "" {
+		endTime = utils.GetString(data, "end_time")
 	}
 	
 	shop := &model.Shop{
@@ -38,8 +53,8 @@ func (s *ShopService) Save(data map[string]interface{}) (*model.Shop, error) {
 		Address:   utils.GetString(data, "address"),
 		Phone:     utils.GetString(data, "phone"),
 		Image:     utils.GetString(data, "image"),
-		StartTime: utils.GetString(data, "startTime"),
-		EndTime:   utils.GetString(data, "endTime"),
+		StartTime: startTime,
+		EndTime:   endTime,
 		Tag1:      utils.GetString(data, "tag1"),
 		Tag2:      utils.GetString(data, "tag2"),
 		CreatedAt: time.Now(),
@@ -53,15 +68,37 @@ func (s *ShopService) Save(data map[string]interface{}) (*model.Shop, error) {
 }
 
 func (s *ShopService) Update(id uint, data map[string]interface{}) error {
-	// 过滤不需要更新的字段
+	fmt.Printf("Update - id: %d, data: %+v\n", id, data)
+	
+	// 字段名映射：蛇形命名 -> 驼峰命名（GORM 模型字段名）
+	fieldMapping := map[string]string{
+		"shop_name":  "ShopName",
+		"address":    "Address",
+		"phone":      "Phone",
+		"image":      "Image",
+		"tag1":       "Tag1",
+		"tag2":       "Tag2",
+		"location":   "Location",
+		"start_time": "StartTime",
+		"end_time":   "EndTime",
+	}
+	
+	// 过滤不需要更新的字段，并转换字段名
 	updates := make(map[string]interface{})
 	for k, v := range data {
 		if k == "createdAt" || k == "startTime" || k == "endTime" {
 			continue
 		}
-		updates[k] = v
+		// 转换为 GORM 模型字段名
+		if fieldName, ok := fieldMapping[k]; ok {
+			updates[fieldName] = v
+		} else {
+			updates[k] = v
+		}
 	}
-	updates["updated_at"] = time.Now()
+	updates["UpdatedAt"] = time.Now()
+	
+	fmt.Printf("Update - updates: %+v\n", updates)
 
 	return s.shopDao.Update(id, updates)
 }
