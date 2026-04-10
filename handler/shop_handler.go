@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"wxcloudrun-golang/service"
@@ -120,27 +121,54 @@ func (h *ShopHandler) Delete(c *gin.Context) {
 func (h *ShopHandler) Admin(c *gin.Context) {
 	var data map[string]interface{}
 	if err := c.ShouldBindJSON(&data); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
-		return
+		// 如果绑定失败，尝试从 Query 参数获取
+		data = make(map[string]interface{})
 	}
 
-	page := utils.ParseInt(data, "page")
-	limit := utils.ParseInt(data, "limit")
+	// 优先从 Query 参数获取（支持 GET 请求）
+	pageStr := c.Query("page")
+	limitStr := c.Query("limit")
+	keyword := c.Query("keyword")
+
+	page := 1
+	limit := 10
+
+	if pageStr != "" {
+		fmt.Sscanf(pageStr, "%d", &page)
+	} else {
+		page = utils.ParseInt(data, "page")
+	}
+
+	if limitStr != "" {
+		fmt.Sscanf(limitStr, "%d", &limit)
+	} else {
+		limit = utils.ParseInt(data, "limit")
+	}
+
+	if keyword == "" {
+		keyword = utils.GetString(data, "keyword")
+	}
+
 	if page == 0 {
 		page = 1
 	}
 	if limit == 0 {
 		limit = 10
 	}
-	keyword := utils.GetString(data, "keyword")
+
+	fmt.Printf("Admin API - page: %d, limit: %d, keyword: %s\n", page, limit, keyword)
 
 	shops, total, err := h.shopService.AdminList(page, limit, keyword)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取列表失败"})
+		fmt.Printf("AdminList error: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取列表失败", "detail": err.Error()})
 		return
 	}
 
+	fmt.Printf("AdminList result - shops count: %d, total: %d\n", len(shops), total)
+
 	response := map[string]interface{}{
+		"code":  0,
 		"list":  shops,
 		"total": total,
 		"page":  page,

@@ -17,3 +17,8 @@ type Shop struct {
 	Tag1      string    `gorm:"column:tag1" json:"tag1"`
 	Tag2      string    `gorm:"column:tag2" json:"tag2"`
 }
+
+// TableName 指定表名
+func (Shop) TableName() string {
+	return "shop"
+}

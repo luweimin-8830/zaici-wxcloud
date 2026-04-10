@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"time"
 	"wxcloudrun-golang/db/dao"
 	"wxcloudrun-golang/db/model"
@@ -60,7 +61,13 @@ func (s *ShopService) Delete(id uint) error {
 
 func (s *ShopService) AdminList(page, limit int, keyword string) ([]model.Shop, int64, error) {
 	skip := (page - 1) * limit
-	return s.shopDao.Search(keyword, skip, limit)
+	fmt.Printf("ShopService.AdminList - page: %d, limit: %d, skip: %d, keyword: %s\n", page, limit, skip, keyword)
+	shops, total, err := s.shopDao.Search(keyword, skip, limit)
+	if err != nil {
+		fmt.Printf("ShopDao.Search error: %v\n", err)
+	}
+	fmt.Printf("ShopDao.Search result - shops: %d, total: %d\n", len(shops), total)
+	return shops, total, err
 }
 
 func (s *ShopService) GetNearList(longitude, latitude, distance float64) ([]model.Shop, error) {

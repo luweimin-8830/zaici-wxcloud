@@ -133,6 +133,7 @@ func main() {
 		shopGroup.POST("/save", shopHandler.Save)
 		shopGroup.POST("/update", shopHandler.Update)
 		shopGroup.POST("/del", shopHandler.Delete)
+		shopGroup.GET("/admin", shopHandler.Admin)
 		shopGroup.POST("/admin", shopHandler.Admin)
 	}
 
