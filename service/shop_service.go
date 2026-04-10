@@ -167,7 +167,10 @@ func (s *ShopService) GetNearList(longitude, latitude, distance float64) ([]map[
 
 // parseLocation 解析 GeoJSON 格式的 location 字符串
 func parseLocation(location string) (longitude, latitude float64) {
+	fmt.Printf("parseLocation - input: %s\n", location)
+	
 	if location == "" {
+		fmt.Printf("parseLocation - empty location\n")
 		return 0, 0
 	}
 	
@@ -177,11 +180,19 @@ func parseLocation(location string) (longitude, latitude float64) {
 		Coordinates []float64 `json:"coordinates"`
 	}
 	
-	if err := json.Unmarshal([]byte(location), &geo); err == nil && len(geo.Coordinates) >= 2 {
-		return geo.Coordinates[0], geo.Coordinates[1] // longitude, latitude
+	if err := json.Unmarshal([]byte(location), &geo); err != nil {
+		fmt.Printf("parseLocation - unmarshal error: %v\n", err)
+		return 0, 0
 	}
 	
-	return 0, 0
+	fmt.Printf("parseLocation - parsed: type=%s, coordinates=%v\n", geo.Type, geo.Coordinates)
+	
+	if len(geo.Coordinates) < 2 {
+		fmt.Printf("parseLocation - coordinates length < 2\n")
+		return 0, 0
+	}
+	
+	return geo.Coordinates[0], geo.Coordinates[1] // longitude, latitude
 }
 
 // haversineDistance 计算两点之间的球面距离（单位：公里）
