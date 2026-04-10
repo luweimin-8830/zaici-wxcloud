@@ -4,7 +4,7 @@ import "time"
 
 type Shop struct {
 	ID        uint      `gorm:"primaryKey;autoIncrement;column:id" json:"id"`
-	ShopName  string    `gorm:"column:shopname" json:"shopname"`
+	ShopName  string    `gorm:"column:shop_name" json:"shopName"`
 	Location  string    `gorm:"column:location" json:"location"` // GeoJSON string
 	CreatedAt time.Time `gorm:"column:created_at" json:"createdAt"`
 	UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`

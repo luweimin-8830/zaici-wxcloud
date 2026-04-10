@@ -23,14 +23,22 @@ func (s *ShopService) GetDetail(id string) (*model.Shop, error) {
 }
 
 func (s *ShopService) Save(data map[string]interface{}) (*model.Shop, error) {
+	// 兼容前端字段名：shopName 或 shopname
+	shopName := utils.GetString(data, "shopName")
+	if shopName == "" {
+		shopName = utils.GetString(data, "shopname")
+	}
+	
 	shop := &model.Shop{
-		ShopName:  utils.GetString(data, "shopname"),
+		ShopName:  shopName,
 		Location:  utils.GetString(data, "location"),
 		Address:   utils.GetString(data, "address"),
 		Phone:     utils.GetString(data, "phone"),
 		Image:     utils.GetString(data, "image"),
 		StartTime: utils.GetString(data, "startTime"),
 		EndTime:   utils.GetString(data, "endTime"),
+		Tag1:      utils.GetString(data, "tag1"),
+		Tag2:      utils.GetString(data, "tag2"),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
