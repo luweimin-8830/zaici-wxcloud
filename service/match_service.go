@@ -113,7 +113,10 @@ func (s *MatchService) AddMatch(openId1, openId2, channel string, operation int,
 
 	if match != nil {
 		if operation == 1 {
-			match.Status = 1
+			// 如果当前 status=1（单向喜欢），现在另一方也喜欢，则设置为 status=2（双向匹配）
+			if match.Status == 1 {
+				match.Status = 2
+			}
 			match.LikeType = likeType
 			match.UpdatedAt = time.Now()
 			if err := s.matchDao.Update(match); err != nil {
@@ -122,7 +125,7 @@ func (s *MatchService) AddMatch(openId1, openId2, channel string, operation int,
 			if likeType == 2 {
 				s.changeLikeData(openId2, 2)
 			}
-			return 1, nil
+			return match.Status, nil
 		} else if operation == 0 {
 			if err := s.matchDao.DeleteByID(match.ID); err != nil {
 				return 0, err
