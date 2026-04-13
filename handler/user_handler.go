@@ -130,3 +130,19 @@ func (h *UserHandler) GetOtherUserInfo(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 0, "data": user})
 }
+
+// GetUserInfo 获取当前登录用户信息
+func (h *UserHandler) GetUserInfo(c *gin.Context) {
+	openId := c.GetHeader("x-wx-openid")
+	if openId == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "未获取到openId,请确认"})
+		return
+	}
+
+	user, err := h.userService.GetUserInfo(openId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "data": user})
+}

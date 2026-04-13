@@ -60,6 +60,7 @@ func main() {
 		userGroup.POST("/addSuperLike", userHandler.AddSuperLike)
 		userGroup.POST("/addAdmin", userHandler.AddAdmin)
 		userGroup.POST("/getOtherUserInfo", userHandler.GetOtherUserInfo)
+		userGroup.GET("/info", userHandler.GetUserInfo)
 	}
 
 	// Banner 相关接口 /api/banner/*

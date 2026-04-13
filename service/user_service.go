@@ -20,6 +20,10 @@ func (s *UserService) GetOtherUserInfo(openId string) (*model.User, error) {
 	return s.userDao.GetByOpenID(openId)
 }
 
+func (s *UserService) GetUserInfo(openId string) (*model.User, error) {
+	return s.userDao.GetByOpenID(openId)
+}
+
 func (s *UserService) GetOrCreateUser(openId string, body map[string]interface{}) (*model.User, error) {
 	user, err := s.userDao.GetByOpenID(openId)
 	if err != nil {
