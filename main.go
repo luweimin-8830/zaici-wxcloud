@@ -110,6 +110,7 @@ func main() {
 		matchGroup.POST("/add", matchHandler.AddMatch)
 		matchGroup.POST("/del", matchHandler.DeleteMatch)
 		matchGroup.POST("/getLikeMatch", matchHandler.GetLikeMatch)
+		matchGroup.POST("/likeCount", matchHandler.GetLikeCount)
 		matchGroup.POST("/sendMessage", matchHandler.SendMessage)
 	}
 
