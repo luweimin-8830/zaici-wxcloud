@@ -96,12 +96,12 @@ func (h *MatchHandler) GetLikeCount(c *gin.Context) {
 		return
 	}
 
-	count, err := h.matchService.GetLikeCount(query.OpenId)
+	result, err := h.matchService.GetLikeCount(query.OpenId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 0, "data": count})
+	c.JSON(http.StatusOK, gin.H{"code": 0, "data": result})
 }
 
 func (h *MatchHandler) SendMessage(c *gin.Context) {

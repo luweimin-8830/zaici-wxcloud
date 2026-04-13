@@ -78,12 +78,28 @@ func (s *MatchService) GetMatches(openId string, status int) ([]map[string]inter
 	return result, nil
 }
 
-func (s *MatchService) GetLikeCount(openId string) (int, error) {
+func (s *MatchService) GetLikeCount(openId string) (map[string]interface{}, error) {
 	likeCountMatches, err := s.matchDao.GetLikeMatches(openId)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return len(likeCountMatches), nil
+
+	count := len(likeCountMatches)
+	avatar := ""
+
+	// 获取最新喜欢我的人的头像
+	if count > 0 {
+		firstMatch := likeCountMatches[0]
+		user, err := s.userDao.GetByOpenID(firstMatch.OpenId1)
+		if err == nil && user != nil {
+			avatar = user.Avatar
+		}
+	}
+
+	return map[string]interface{}{
+		"count":  count,
+		"avatar": avatar,
+	}, nil
 }
 
 func (s *MatchService) AddMatch(openId1, openId2, channel string, operation int, likeType int) (int, error) {
