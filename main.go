@@ -59,6 +59,7 @@ func main() {
 		userGroup.POST("/superLike", userHandler.UseSuperLike)
 		userGroup.POST("/addSuperLike", userHandler.AddSuperLike)
 		userGroup.POST("/addAdmin", userHandler.AddAdmin)
+		userGroup.POST("/getOtherUserInfo", userHandler.GetOtherUserInfo)
 	}
 
 	// Banner 相关接口 /api/banner/*
@@ -114,7 +115,7 @@ func main() {
 		matchGroup.POST("/sendMessage", matchHandler.SendMessage)
 	}
 
-// ... existing code ...
+	// ... existing code ...
 	// 在线相关接口 /api/online/*
 	onlineGroup := r.Group("/api/online")
 	{
@@ -124,7 +125,7 @@ func main() {
 		onlineGroup.GET("/history", onlineHandler.GetHistory)
 		onlineGroup.POST("/shop", onlineHandler.GetShop)
 	}
-// ... existing code ...
+	// ... existing code ...
 
 	// 门店相关接口 /api/shop/*
 	shopGroup := r.Group("/api/shop")
@@ -148,7 +149,7 @@ func main() {
 		mediaGroup.POST("/delete/:id", mediaHandler.DeletePicture)
 		mediaGroup.POST("/checkStatus/:id", mediaHandler.UpdatePictureSecCheckStatus)
 		mediaGroup.GET("/getByHash", mediaHandler.GetPictureByHash)
-		mediaGroup.POST("/getHash", mediaHandler.GetHash)       // 兼容旧接口
+		mediaGroup.POST("/getHash", mediaHandler.GetHash)         // 兼容旧接口
 		mediaGroup.POST("/startCensor", mediaHandler.StartCensor) // 从 index.js 迁移
 	}
 

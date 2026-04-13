@@ -113,3 +113,20 @@ func (h *UserHandler) AddAdmin(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 0, "data": msg})
 }
+
+func (h *UserHandler) GetOtherUserInfo(c *gin.Context) {
+	var query struct {
+		Id string `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&query); err != nil || query.Id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 401, "message": "参数错误"})
+		return
+	}
+
+	user, err := h.userService.GetOtherUserInfo(query.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "data": user})
+}
