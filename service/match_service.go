@@ -30,27 +30,7 @@ func (s *MatchService) GetMatches(openId string, status int) ([]map[string]inter
 
 	var result []map[string]interface{}
 
-	// 1. 处理 "好友申请" (likeCount 逻辑)
-	likeCountMatches, _ := s.matchDao.GetLikeMatches(openId)
-	avatar := "https://cloudbase-3gn2elwa3387b385-1364843451.tcloudbaseapp.com/user-search-fill.png?sign=fd684b2ec65ae33bd702f70edc25997f&t=1757054747"
-	if len(likeCountMatches) > 0 {
-		firstMatch := likeCountMatches[0]
-		otherId := firstMatch.OpenId1
-		user, err := s.userDao.GetByOpenID(otherId)
-		if err == nil && user != nil {
-			avatar = user.Avatar
-		}
-	}
-
-	result = append(result, map[string]interface{}{
-		"count":       len(likeCountMatches),
-		"avatar":      avatar,
-		"name":        "好友申请",
-		"content":     1,
-		"contentTime": time.Now().UnixMilli(),
-	})
-
-	// 2. 填充匹配列表详情
+	// 填充匹配列表详情
 	for _, m := range matches {
 		otherId := m.OpenId1
 		if m.OpenId1 == openId {
@@ -95,9 +75,15 @@ func (s *MatchService) GetMatches(openId string, status int) ([]map[string]inter
 		result = append(result, item)
 	}
 
-	// 排序逻辑: content=1 优先，然后按时间倒序
-	// 注意: Golang slice 排序需要具体实现’
 	return result, nil
+}
+
+func (s *MatchService) GetLikeCount(openId string) (int, error) {
+	likeCountMatches, err := s.matchDao.GetLikeMatches(openId)
+	if err != nil {
+		return 0, err
+	}
+	return len(likeCountMatches), nil
 }
 
 func (s *MatchService) AddMatch(openId1, openId2, channel string, operation int, likeType int) (int, error) {
