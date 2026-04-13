@@ -132,7 +132,7 @@ func (s *ShopService) GetNearList(longitude, latitude, distance float64) ([]map[
 
 	// 获取在线人数（这里简化处理，实际应该查询 online 表）
 	onlineDao := dao.NewOnlineDao()
-	now := time.Now().Unix()
+	now := time.Now().UnixMilli() // 使用毫秒与数据库保持一致
 
 	// 构建返回结果，计算距离并过滤
 	result := make([]map[string]interface{}, 0, len(shops))
