@@ -65,7 +65,7 @@ func (h *BannerHandler) SaveBanner(c *gin.Context) {
 
 func (h *BannerHandler) DeleteBanner(c *gin.Context) {
 	var query struct {
-		ID string `json:"_id"`
+		ID string `json:"id"`
 	}
 	if err := c.ShouldBindJSON(&query); err != nil || query.ID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 401, "message": "参数错误"})
