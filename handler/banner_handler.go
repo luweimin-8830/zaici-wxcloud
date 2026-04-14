@@ -98,3 +98,20 @@ func (h *BannerHandler) DeleteBanner(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 0, "data": "删除成功"})
 }
+
+func (h *BannerHandler) UpdateBannerDetail(c *gin.Context) {
+	var body struct {
+		ID     uint                   `json:"id"`
+		Detail map[string]interface{} `json:"detail"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil || body.ID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 401, "message": "参数错误"})
+		return
+	}
+
+	if err := h.bannerService.UpdateDetail(body.ID, body.Detail); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "更新成功"})
+}

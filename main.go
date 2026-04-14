@@ -70,6 +70,7 @@ func main() {
 		bannerGroup.GET("/detail", bannerHandler.GetBannerDetail)
 		bannerGroup.POST("/save", bannerHandler.SaveBanner)
 		bannerGroup.POST("/del", bannerHandler.DeleteBanner)
+		bannerGroup.POST("/updateDetail", bannerHandler.UpdateBannerDetail)
 	}
 
 	// 配置相关接口 /api/config/*

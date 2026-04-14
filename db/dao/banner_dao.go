@@ -37,3 +37,7 @@ func (d *BannerDao) Update(banner *model.Banner) error {
 func (d *BannerDao) Delete(id uint) error {
 	return db.Get().Delete(&model.Banner{}, id).Error
 }
+
+func (d *BannerDao) UpdateDetail(id uint, detail string) error {
+	return db.Get().Model(&model.Banner{}).Where("id = ?", id).Update("detail", detail).Error
+}

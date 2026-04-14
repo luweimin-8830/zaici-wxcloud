@@ -96,3 +96,10 @@ func (s *BannerService) SaveBanner(bannerData map[string]interface{}) (string, e
 func (s *BannerService) DeleteBanner(id uint) error {
 	return s.bannerDao.Delete(id)
 }
+
+func (s *BannerService) UpdateDetail(id uint, detail map[string]interface{}) error {
+	// 直接序列化 detail 为 JSON
+	detailJson, _ := json.Marshal(detail)
+
+	return s.bannerDao.UpdateDetail(id, string(detailJson))
+}
