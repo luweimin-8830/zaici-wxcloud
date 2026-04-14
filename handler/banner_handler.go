@@ -64,16 +64,30 @@ func (h *BannerHandler) SaveBanner(c *gin.Context) {
 }
 
 func (h *BannerHandler) DeleteBanner(c *gin.Context) {
-	var query struct {
-		ID string `json:"id"`
-	}
-	if err := c.ShouldBindJSON(&query); err != nil || query.ID == "" {
+	var body map[string]interface{}
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 401, "message": "参数错误"})
 		return
 	}
 
-	id, err := strconv.Atoi(query.ID)
-	if err != nil {
+	idVal, ok := body["id"]
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 401, "message": "缺少参数id"})
+		return
+	}
+
+	var id int
+	switch v := idVal.(type) {
+	case float64:
+		id = int(v)
+	case string:
+		var err error
+		id, err = strconv.Atoi(v)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"code": 401, "message": "ID格式错误"})
+			return
+		}
+	default:
 		c.JSON(http.StatusBadRequest, gin.H{"code": 401, "message": "ID格式错误"})
 		return
 	}
