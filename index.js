@@ -7,7 +7,9 @@ import { getDb, getTcb} from "./src/util/tcb.js";
 import {ok,fail} from "./src/response.js";
 
 
-const db = getDb();//初始化数据库，之后可能直接从模型倒下去
+
+// const db = getDb();
+// //初始化数据库，之后可能直接从模型倒下去
 const SECRET_KEY = "e42487a150c54d35"; //GoEasy API请求检验
 const app = express(); //创建 express instance
 const tcb = getTcb()
